@@ -13,18 +13,37 @@ typedef Filtration<AlphaSimplex3D>              AlphaFiltration;
 typedef StaticPersistence<>                     Persistence;
 typedef PersistenceDiagram<>                    PDgm;
 
-Triangulation::Triangulation()
+void Triangulation::set_in_file(QString infile)
 {
-
+    pts_ = pts;
 }
 
-Triangulation Triangulation::AlphaShape(std::vector<std::tuple<double, double, double> > pts)
+void Triangulation::set_mode(Mode mode)
+{
+    mode_ = mode;
+}
+
+bool Triangulation::calculate()
+{
+    switch(mode_)
+    {
+    case alpha_shapes: return calc_alphashapes_();
+    case viterbi:      return calc_viterbi_();
+    case cech:         return calc_cech_();
+    default:           return false;
+    }
+}
+
+bool Triangulation::calc_viterbi_() { return false; }
+bool Triangulation::calc_cech_() { return false; }
+
+bool Triangulation::calc_alphashapes_()
 {
     // Read in the point set and compute its Delaunay triangulation
     double x,y,z;
     Delaunay3D Dt;
 
-    for(auto iter = pts.begin(); iter != pts.end(); iter++)
+    for(auto iter = pts_.begin(); iter != pts_.end(); iter++)
     {
         std::tie(x, y, z) < *iter;
 
@@ -35,20 +54,14 @@ Triangulation Triangulation::AlphaShape(std::vector<std::tuple<double, double, d
 
     AlphaFiltration  af;
     fill_complex(Dt, af);
-    rInfo("Simplices: %d", af.size());
 
     // Create the alpha-shape filtration
     af.sort(AlphaSimplex3D::AlphaOrder());
-    rInfo("Filtration initialized");
+    qDebug("Filtration initialized");
 
     Persistence p(af);
-    rInfo("Persistence initializaed");
+    qDebug("Persistence initializaed");
 
     p.pair_simplices();
-
-    Persistence::SimplexMap<AlphaFiltration>    m       = p.make_simplex_map(af);
-    std::map<Dimension, PDgm> dgms;
-    init_diagrams(dgms, p.begin(), p.end(),
-                  evaluate_through_map(m, AlphaSimplex3D::AlphaValueEvaluator()),
-                  evaluate_through_map(m, AlphaSimplex3D::DimensionExtractor()));
+    return true;
 }

@@ -23,3 +23,5 @@ include(deployment.pri)
 HEADERS += \
     src/surfacegraph.h \
     src/triangulation.h
+
+QMAKE_CXXFLAGS += -Wno-unused
