@@ -44,45 +44,38 @@ bool Triangulation::set_in_file(std::string infile)
     std::ifstream f (infile);
     std::string line;
 
-    if (f.is_open())
+    if (!f.is_open())
+        return false;
+
+    while ( getline (f, line) )
     {
-        while ( getline (f, line) )
-        {
-            if(!(line[0] == 'v' && line[1] == ' '))
-                continue;
+        if(!(line[0] == 'v' && line[1] == ' '))
+            continue;
 
-            std::vector<std::string> tmp = split(line, ' ');
-            std::array<double, 3> pt = {std::stod(tmp[1]), std::stod(tmp[2]), std::stod(tmp[3])};
-            orig_pts_.push_back(pt);
-        }
-
-        f.close();
-        return true;
+        std::vector<std::string> tmp = split(line, ' ');
+        std::array<double, 3> pt = {std::stod(tmp[1]), std::stod(tmp[2]), std::stod(tmp[3])};
+        orig_pts_.push_back(pt);
     }
 
-    return false;
-}
-
-void Triangulation::set_mode(Mode mode)
-{
-    mode_ = mode;
+    return true;
 }
 
 bool Triangulation::calculate()
 {
-    //TODO: filtrate
-    pts_ = orig_pts_;
+    std::random_shuffle(orig_pts_.begin(), orig_pts_.end());
+
+    assert(prob_ <= 1 && prob_ > 0);
+    pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
     switch(mode_)
     {
     case alpha_shapes: return calc_alphashapes_();
-    case viterbi:      return calc_viterbi_();
+    case rips:         return calc_rips_();
     case cech:         return calc_cech_();
     default:           return false;
     }
 }
 
-bool Triangulation::calc_viterbi_() { return false; }
 bool Triangulation::calc_cech_() { return false; }
 
 bool Triangulation::calc_alphashapes_()
@@ -99,18 +92,49 @@ bool Triangulation::calc_alphashapes_()
         Delaunay3D::Point p(x,y,z);
         Dt.insert(p);
     }
-    qDebug("Delaunay triangulation computed");
 
     AlphaFiltration  af;
     fill_complex(Dt, af);
 
     // Create the alpha-shape filtration
     af.sort(AlphaSimplex3D::AlphaOrder());
-    qDebug("Filtration initialized");
 
     Persistence p(af);
-    qDebug("Persistence initializaed");
-
+    //TODO: can we actually read these stars to track progress??
     p.pair_simplices();
+
+    triangles_.clear();
+
+    Persistence::SimplexMap<AlphaFiltration> m = p.make_simplex_map(af);
+    for(auto iter = p.begin(); iter != p.end(); iter++)
+    {
+        auto vertices = m[iter].vertices();
+
+        //TODO: handle 4D simplexes!!
+        if(vertices.size() != 3)
+            continue;
+
+        TTriangle trig;
+        uint idx = 0;
+        for(auto v = vertices.begin(); v != vertices.end(); v++)
+        {
+            CGAL::Point_3<CGAL::Epeck> pt = (**v).point();
+
+            trig[idx] = {
+                    CGAL::to_double(pt.x()),
+                    CGAL::to_double(pt.y()),
+                    CGAL::to_double(pt.z())
+            };
+            idx++;
+        }
+
+        triangles_.push_back(trig);
+    }
+
     return true;
+}
+
+bool Triangulation::calc_rips_()
+{
+
 }

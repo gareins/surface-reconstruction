@@ -20,9 +20,11 @@ int main(int argc, char **argv) {
     if(1)
     {
         Triangulation t;
-        t.set_in_file("dataset/sphere_100.obj");
+        t.set_in_file("dataset/sphere_1000.obj");
         t.set_mode(Triangulation::alpha_shapes);
         t.calculate();
+
+        qDebug("Found %d triangles!", t.get_triangles().size());
         exit(0);
     }
 
