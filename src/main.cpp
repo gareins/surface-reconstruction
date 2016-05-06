@@ -13,7 +13,18 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QScreen>
 
+#include "triangulation.h"
+
 int main(int argc, char **argv) {
+
+    if(1)
+    {
+        Triangulation t;
+        t.set_in_file("dataset/sphere_100.obj");
+        t.set_mode(Triangulation::alpha_shapes);
+        t.calculate();
+        exit(0);
+    }
 
     QApplication app(argc, argv);
     Q3DSurface *graph = new Q3DSurface();

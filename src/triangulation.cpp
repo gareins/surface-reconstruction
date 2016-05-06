@@ -1,21 +1,66 @@
+#include "Dionysus/examples/alphashapes/alphashapes3d.h"
+
 #include "triangulation.h"
+#include <topology/simplex.h>
+#include <utilities/types.h>
 
 #include <topology/filtration.h>
 #include <topology/static-persistence.h>
 #include <topology/persistence-diagram.h>
 #include <iostream>
 
+#include <qdebug.h>
 #include <fstream>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/map.hpp>
+
+// ---------------------------------------------------
+// This could go to some utils file
+#include <sstream>
+#include <vector>
+
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+// ---------------------------------------------------
 
 typedef Filtration<AlphaSimplex3D>              AlphaFiltration;
 typedef StaticPersistence<>                     Persistence;
 typedef PersistenceDiagram<>                    PDgm;
 
-void Triangulation::set_in_file(QString infile)
+bool Triangulation::set_in_file(std::string infile)
 {
-    pts_ = pts;
+    std::ifstream f (infile);
+    std::string line;
+
+    if (f.is_open())
+    {
+        while ( getline (f, line) )
+        {
+            if(!(line[0] == 'v' && line[1] == ' '))
+                continue;
+
+            std::vector<std::string> tmp = split(line, ' ');
+            std::array<double, 3> pt = {std::stod(tmp[1]), std::stod(tmp[2]), std::stod(tmp[3])};
+            orig_pts_.push_back(pt);
+        }
+
+        f.close();
+        return true;
+    }
+
+    return false;
 }
 
 void Triangulation::set_mode(Mode mode)
@@ -25,6 +70,9 @@ void Triangulation::set_mode(Mode mode)
 
 bool Triangulation::calculate()
 {
+    //TODO: filtrate
+    pts_ = orig_pts_;
+
     switch(mode_)
     {
     case alpha_shapes: return calc_alphashapes_();
@@ -45,7 +93,8 @@ bool Triangulation::calc_alphashapes_()
 
     for(auto iter = pts_.begin(); iter != pts_.end(); iter++)
     {
-        std::tie(x, y, z) < *iter;
+        TPoint tp = *iter;
+        x = tp.at(0); y = tp.at(1); z = tp.at(2);
 
         Delaunay3D::Point p(x,y,z);
         Dt.insert(p);

@@ -24,4 +24,4 @@ HEADERS += \
     src/surfacegraph.h \
     src/triangulation.h
 
-QMAKE_CXXFLAGS += -Wno-unused
+QMAKE_CXXFLAGS += -Wno-unused -O0
