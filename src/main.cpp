@@ -1,4 +1,11 @@
+#include <QApplication>
+#include <QLabel>
+#include <QSurfaceFormat>
+
+#ifndef QT_NO_OPENGL
 #include "surfacegraph.h"
+#endif
+/*
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
@@ -12,24 +19,37 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QScreen>
+*/
+
+#define TEST_TRIAG 0
 
 #include "triangulation.h"
 
 int main(int argc, char **argv) {
 
-    if(1)
+    if(TEST_TRIAG)
     {
         Triangulation t;
         t.set_in_file("dataset/sphere_1000.obj");
         t.set_mode(Triangulation::alpha_shapes);
         t.calculate();
 
-        qDebug("Found %d triangles!", t.get_triangles().size());
+        qDebug("Found %d triangles!", (int)t.get_triangles().size());
         exit(0);
     }
 
     QApplication app(argc, argv);
-    Q3DSurface *graph = new Q3DSurface();
+
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    QSurfaceFormat::setDefaultFormat(format);
+
+    app.setApplicationName("Surface Reconstruction");
+    //app.setApplicationVersion("0.1");
+#ifndef QT_NO_OPENGL
+    SurfaceGraph graph;
+    graph.show();
+    /*
     QWidget *container = QWidget::createWindowContainer(graph);
 
     if (!graph->hasContext()) {
@@ -105,11 +125,15 @@ int main(int argc, char **argv) {
 
     widget->show();
 
-    SurfaceGraph *plot = new SurfaceGraph(graph);
+    //SurfaceGraph *plot = new SurfaceGraph(graph);
 
     // TODO: pass params to update
     QObject::connect(confirmButton, &QPushButton::clicked,
                      [=]{plot->update();});
-
+    */
+#else
+    QLabel note("OpenGL Support required");
+    note.show();
+#endif
     return app.exec();
 }

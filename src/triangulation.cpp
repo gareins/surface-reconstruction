@@ -136,5 +136,5 @@ bool Triangulation::calc_alphashapes_()
 
 bool Triangulation::calc_rips_()
 {
-
+    return false;
 }

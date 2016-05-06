@@ -9,6 +9,7 @@ N = [100, 1000, 10000]
 for npoints in N:
     vec = np.random.randn(3, npoints)
     vec /= np.linalg.norm(vec, axis=0)
+    vec *= 5
 
     with open("sphere_" + str(npoints) + ".obj", "w") as fp:
         for pt in vec.T:

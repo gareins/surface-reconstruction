@@ -1,27 +1,30 @@
 TEMPLATE = app
 
-QT += qml quick widgets datavisualization
+QT += qml quick widgets core gui
 CONFIG += c++11
 
 INCLUDEPATH += $$PWD/Dionysus/include/
 
 LIBS += -lCGAL -lgmp -lmpfr
 
-# The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += src/main.cpp \
-    src/surfacegraph.cpp \
-    src/triangulation.cpp
+RESOURCES += qml/resources.qrc \
+    shaders/shaders.qrc \
+    shaders/textures.qrc
 
-RESOURCES += qml/resources.qrc
+SOURCES += src/main.cpp \
+    src/triangulation.cpp \
+    src/geometryengine.cpp \
+    src/surfacegraph.cpp
+
+HEADERS += \
+    src/geometryengine.h \
+    src/surfacegraph.h \
+    src/triangulation.h
 
 OTHER_FILES += doc/src/* \
                doc/images/* \
                qml/*
 # Default rules for deployment.
 include(deployment.pri)
-
-HEADERS += \
-    src/surfacegraph.h \
-    src/triangulation.h
 
 QMAKE_CXXFLAGS += -Wno-unused -O0
