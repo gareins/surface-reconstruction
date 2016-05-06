@@ -80,3 +80,5 @@ Thumbs.db
 *.exe
 *.out
 
+# Dionysus link
+Dionysus
