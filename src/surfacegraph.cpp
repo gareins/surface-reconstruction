@@ -157,8 +157,6 @@ void SurfaceGraph::paintGL()
     geometries->drawGeometry(&program);
 }
 
-/*
-void SurfaceGraph::update()
+void SurfaceGraph::recalc()
 {
 }
-*/

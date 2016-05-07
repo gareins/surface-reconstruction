@@ -21,7 +21,7 @@ class SurfaceGraph : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     explicit SurfaceGraph(QWidget *parent = 0);
     ~SurfaceGraph();
-    //void update();
+    void recalc();
 
 protected:
     void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;

@@ -5,7 +5,6 @@
 #ifndef QT_NO_OPENGL
 #include "surfacegraph.h"
 #endif
-/*
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
@@ -19,7 +18,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QScreen>
-*/
 
 #define TEST_TRIAG 0
 
@@ -47,28 +45,17 @@ int main(int argc, char **argv) {
     app.setApplicationName("Surface Reconstruction");
     //app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
-    SurfaceGraph graph;
-    graph.show();
-    /*
-    QWidget *container = QWidget::createWindowContainer(graph);
 
-    if (!graph->hasContext()) {
-        QMessageBox msgBox;
-        msgBox.setText("Couldn't initialize the OpenGL context.");
-        msgBox.exec();
-        return -1;
-    }
-
-    QSize screenSize = graph->screen()->size();
-    container->setMinimumSize(QSize(screenSize.width() / 2, screenSize.height() / 1.6));
-    container->setMaximumSize(screenSize);
-    container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    container->setFocusPolicy(Qt::StrongFocus);
+    QWidget *graph = new QWidget;
+    SurfaceGraph *plot = new SurfaceGraph(graph);
+    graph->setMinimumSize(700,500);
+    plot->setMinimumSize(700,500);
 
     QWidget *widget = new QWidget;
     QHBoxLayout *hLayout = new QHBoxLayout(widget);
     QVBoxLayout *vLayout = new QVBoxLayout();
-    hLayout->addWidget(container, 1);
+
+    hLayout->addWidget(graph, 1);
     hLayout->addLayout(vLayout);
     vLayout->setAlignment(Qt::AlignTop);
 
@@ -123,14 +110,11 @@ int main(int argc, char **argv) {
     vLayout->addWidget(dimensionSlider);
     vLayout->addWidget(confirmButton);
 
-    widget->show();
-
-    //SurfaceGraph *plot = new SurfaceGraph(graph);
-
     // TODO: pass params to update
     QObject::connect(confirmButton, &QPushButton::clicked,
-                     [=]{plot->update();});
-    */
+                     [=]{plot->recalc();});
+
+    widget->show();
 #else
     QLabel note("OpenGL Support required");
     note.show();
