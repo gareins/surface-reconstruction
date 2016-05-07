@@ -5,7 +5,7 @@ CONFIG += c++11
 
 INCLUDEPATH += $$PWD/Dionysus/include/
 
-LIBS += -lCGAL -lgmp -lmpfr
+LIBS += -lCGAL -lgmp -lmpfr -lboost_thread -lboost_system -lboost_filesystem -lboost_serialization
 
 RESOURCES += qml/resources.qrc \
     shaders/shaders.qrc \
@@ -27,4 +27,4 @@ OTHER_FILES += doc/src/* \
 # Default rules for deployment.
 include(deployment.pri)
 
-QMAKE_CXXFLAGS += -Wno-unused -O0
+QMAKE_CXXFLAGS += -Wno-unused -O0 -frounding-math
