@@ -110,9 +110,12 @@ int main(int argc, char **argv) {
     vLayout->addWidget(dimensionSlider);
     vLayout->addWidget(confirmButton);
 
-    // TODO: pass params to update
+    // TODO: this should initiate a recalc in triangulation with parameters from above widgets
+    // and a reference to *plot instead of calling redraw. When the recalc is done,
+    // triangulation should call redraw with a ?TriangleList? as param
+    TriangleList dummyTrig = {{{0.0,0.0,0.0},{0.0,0.0,1.0},{1.0,0.0,0.0}}};
     QObject::connect(confirmButton, &QPushButton::clicked,
-                     [=]{plot->recalc();});
+                     [=]{plot->redraw(dummyTrig);});
 
     widget->show();
 #else

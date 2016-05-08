@@ -106,7 +106,7 @@ void SurfaceGraph::initShaders()
 
 void SurfaceGraph::initTextures()
 {
-    // Load cube.png image
+    // Load texture image
     texture = new QOpenGLTexture(QImage(":/cube.png").mirrored());
 
     // Set nearest filtering mode for texture minification
@@ -150,13 +150,20 @@ void SurfaceGraph::paintGL()
     // Set modelview-projection matrix
     program.setUniformValue("mvp_matrix", projection * matrix);
 
-    // Use texture unit 0 which contains cube.png
+    // Use texture unit 0 (which file to use)
     program.setUniformValue("texture", 0);
 
-    // Draw cube geometry
+    // Draw geometry
     geometries->drawGeometry(&program);
 }
 
-void SurfaceGraph::recalc()
+void SurfaceGraph::redraw(TriangleList triangles)
 {
+    makeCurrent();
+    delete geometries;
+    geometries = new GeometryEngine(triangles);
+    doneCurrent();
+
+    // TODO send update to canvas, otherwise triangles show up only after e.g. mouse drag
+    //paintGL();
 }

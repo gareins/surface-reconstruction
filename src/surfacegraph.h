@@ -2,6 +2,7 @@
 #define MAINWIDGET_H
 
 #include "geometryengine.h"
+#include "triangulation.h"
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -21,7 +22,7 @@ class SurfaceGraph : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     explicit SurfaceGraph(QWidget *parent = 0);
     ~SurfaceGraph();
-    void recalc();
+    void redraw(TriangleList triangles);
 
 protected:
     void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;

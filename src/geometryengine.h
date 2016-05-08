@@ -5,16 +5,19 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 
+#include "triangulation.h"
+
 class GeometryEngine : protected QOpenGLFunctions
 {
 public:
     GeometryEngine();
+    GeometryEngine(TriangleList triangles);
     virtual ~GeometryEngine();
 
     void drawGeometry(QOpenGLShaderProgram *program);
 
 private:
-    void initGeometry();
+    void initGeometry(TriangleList triangles = {});
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;
