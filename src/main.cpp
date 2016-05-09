@@ -18,6 +18,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QScreen>
+#include <iostream>
 
 #define TEST_TRIAG 0
 
@@ -112,8 +113,14 @@ int main(int argc, char **argv) {
 
     // TODO: this should initiate a recalc in triangulation with parameters from above widgets
     // and a reference to *plot instead of calling redraw. When the recalc is done,
-    // triangulation should call redraw with a ?TriangleList? as param
-    TriangleList dummyTrig = {{{0.0,0.0,0.0},{0.0,0.0,1.0},{1.0,0.0,0.0}}};
+    // triangulation should call redraw with a TriangleList as param
+    /*
+    std::cout << methodList->currentIndex() << std::endl;
+    std::cout << deltaSpinner->value() << std::endl;
+    std::cout << samplePercentSlider->value() << std::endl;
+    std::cout << dimensionSlider->value() << std::endl;
+    */
+    TriangleList dummyTrig = {{{{0.0,0.0,0.0},{0.0,0.0,1.0},{1.0,0.0,0.0}}},{{{1.0,1.0,1.0},{0.0,0.0,1.0},{1.0,0.0,0.0}}}};
     QObject::connect(confirmButton, &QPushButton::clicked,
                      [=]{plot->redraw(dummyTrig);});
 

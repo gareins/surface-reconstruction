@@ -7,6 +7,12 @@
 
 #include "triangulation.h"
 
+struct VertexData
+{
+    QVector3D position;
+    QVector2D texCoord;
+};
+
 class GeometryEngine : protected QOpenGLFunctions
 {
 public:
@@ -18,9 +24,11 @@ public:
 
 private:
     void initGeometry(TriangleList triangles = {});
+    GLuint indexOf(std::vector<VertexData>, VertexData);
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;
+    uint idxLen;
 };
 
 #endif // GEOMETRYENGINE_H

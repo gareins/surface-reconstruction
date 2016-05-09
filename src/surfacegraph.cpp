@@ -164,6 +164,5 @@ void SurfaceGraph::redraw(TriangleList triangles)
     geometries = new GeometryEngine(triangles);
     doneCurrent();
 
-    // TODO send update to canvas, otherwise triangles show up only after e.g. mouse drag
-    //paintGL();
+    update();
 }
