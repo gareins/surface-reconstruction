@@ -6,6 +6,7 @@
 
 #define DEBUG 0
 #define TWO_SIDED 1
+#define ENABLE_TRANSPARENT 1
 
 GeometryEngine::GeometryEngine()
     : indexBuf(QOpenGLBuffer::IndexBuffer)
@@ -27,7 +28,11 @@ GeometryEngine::~GeometryEngine()
 
 void GeometryEngine::initGeometry(TriangleList triangles)
 {
+    isTransparent = false;
+
     initializeOpenGLFunctions();
+
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Generate 2 VBOs
     arrayBuf.create();
@@ -110,8 +115,16 @@ void GeometryEngine::drawGeometry(QOpenGLShaderProgram *program)
     program->enableAttributeArray(texcoordLocation);
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
 
+    if (isTransparent) {
+        glEnable (GL_BLEND);
+    }
+    else {
+        glDisable(GL_BLEND);
+    }
+
     // Draw geometry using indices from VBO 1
     glDrawElements(GL_TRIANGLES, idxLen, GL_UNSIGNED_INT, 0);
+
 }
 
 GLuint GeometryEngine::indexOf(std::vector<VertexData> verts, VertexData v) {

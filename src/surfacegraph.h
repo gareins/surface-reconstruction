@@ -23,10 +23,14 @@ public:
     explicit SurfaceGraph(QWidget *parent = 0);
     ~SurfaceGraph();
     void redraw(TriangleList triangles);
+    void toggleTransparency(bool isTransparent);
 
 protected:
     void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void setAxisAndSpeed(QMouseEvent *e);
+    void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
     void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
     void initializeGL() Q_DECL_OVERRIDE;
@@ -49,6 +53,9 @@ private:
     QVector3D rotationAxis;
     qreal angularSpeed;
     QQuaternion rotation;
+
+    float zoom;
+    bool isDragging;
 };
 
 #endif // MAINWIDGET_H

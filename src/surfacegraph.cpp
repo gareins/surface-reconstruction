@@ -1,8 +1,11 @@
 #include "surfacegraph.h"
 
 #include <QMouseEvent>
+#include <QWheelEvent>
 
 #include <math.h>
+#include <iostream>
+
 
 SurfaceGraph::SurfaceGraph(QWidget *parent) :
     QOpenGLWidget(parent),
@@ -10,6 +13,8 @@ SurfaceGraph::SurfaceGraph(QWidget *parent) :
     texture(0),
     angularSpeed(0)
 {
+    zoom = 1.0;
+    isDragging = false;
 }
 
 SurfaceGraph::~SurfaceGraph()
@@ -26,9 +31,24 @@ void SurfaceGraph::mousePressEvent(QMouseEvent *e)
 {
     // Save mouse press position
     mousePressPosition = QVector2D(e->localPos());
+    isDragging = true;
+}
+
+void SurfaceGraph::mouseMoveEvent(QMouseEvent *e) {
+    if (isDragging) {
+        setAxisAndSpeed(e);
+        angularSpeed = 2;
+        mousePressPosition = QVector2D(e->localPos());
+    }
 }
 
 void SurfaceGraph::mouseReleaseEvent(QMouseEvent *e)
+{
+    setAxisAndSpeed(e);
+    isDragging = false;
+}
+
+void SurfaceGraph::setAxisAndSpeed(QMouseEvent *e)
 {
     // Mouse release position - mouse press position
     QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
@@ -47,20 +67,35 @@ void SurfaceGraph::mouseReleaseEvent(QMouseEvent *e)
     angularSpeed += acc;
 }
 
+void SurfaceGraph::wheelEvent(QWheelEvent *e)
+{
+    if(e->delta() > 0) {
+        zoom *= 1.1;
+    }
+    else if(e->delta() < 0) {
+        zoom /= 1.1;
+    }
+
+    update();
+}
+
 void SurfaceGraph::timerEvent(QTimerEvent *)
 {
-    // Decrease angular speed (friction)
-    angularSpeed *= 0.99;
-
     // Stop rotation when speed goes below threshold
     if (angularSpeed < 0.01) {
         angularSpeed = 0.0;
     } else {
         // Update rotation
         rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
-
-        // Request an update
         update();
+    }
+
+    // decrease angular speed (gradually if we flicked the object)
+    if (isDragging) {
+        angularSpeed = 0;
+    }
+    else {
+        angularSpeed *= 0.99;
     }
 }
 
@@ -146,6 +181,7 @@ void SurfaceGraph::paintGL()
     QMatrix4x4 matrix;
     matrix.translate(0.0, 0.0, -5.0);
     matrix.rotate(rotation);
+    matrix.scale(zoom,zoom,zoom);
 
     // Set modelview-projection matrix
     program.setUniformValue("mvp_matrix", projection * matrix);
@@ -163,6 +199,12 @@ void SurfaceGraph::redraw(TriangleList triangles)
     delete geometries;
     geometries = new GeometryEngine(triangles);
     doneCurrent();
+
+    update();
+}
+
+void SurfaceGraph::toggleTransparency(bool isTransparent) {
+    geometries->isTransparent = isTransparent;
 
     update();
 }

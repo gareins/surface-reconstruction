@@ -21,6 +21,7 @@ public:
     virtual ~GeometryEngine();
 
     void drawGeometry(QOpenGLShaderProgram *program);
+    bool isTransparent;
 
 private:
     void initGeometry(TriangleList triangles = {});
