@@ -33,6 +33,8 @@ private:
     bool calc_alphashapes_();
     bool calc_rips_();
     bool calc_cech_();
+    int calc_euler();
+    int calc_homology();
 
     bool done_;
     double distance_;

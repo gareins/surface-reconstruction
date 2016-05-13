@@ -1,13 +1,18 @@
-#include "Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "../../Dionysus/examples/alphashapes/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
 #include <utilities/types.h>
 
+#include <topology/rips.h>
 #include <topology/filtration.h>
 #include <topology/static-persistence.h>
+#include <topology/dynamic-persistence.h>
 #include <topology/persistence-diagram.h>
 #include <iostream>
+
+#include <geometry/l2distance.h>
+#include <geometry/distances.h>
 
 #include <qdebug.h>
 #include <qtextstream.h>
@@ -125,6 +130,16 @@ bool Triangulation::calculate()
 
 bool Triangulation::calc_cech_() { return false; }
 
+int Triangulation::calc_euler()
+{
+
+}
+
+int Triangulation::calc_homology()
+{
+
+}
+
 bool Triangulation::calc_alphashapes_()
 {
     // Read in the point set and compute its Delaunay triangulation
@@ -173,12 +188,121 @@ bool Triangulation::calc_alphashapes_()
             add_trig(this, (*vertices[1]).point(), (*vertices[2]).point(), (*vertices[3]).point());
         }
     }
-
+    qDebug() << "Alpha shapes finished!";
     return true;
 }
 
+typedef         PairwiseDistances<PointContainer, L2Distance>           PairDistances;
+typedef         PairDistances::DistanceType                             DistanceType;
+typedef         PairDistances::IndexType                                Vertex;
+
+typedef         Rips<PairDistances>                                     Generator;
+typedef         Generator::Simplex                                      Smplx;
+typedef         Filtration<Smplx>                                       Fltr;
+// typedef         StaticPersistence<>                                     Persistence;
+typedef         DynamicPersistenceChains<>                              DynamicPersistence;
+typedef         PersistenceDiagram<>                                    PDgm;
+
 bool Triangulation::calc_rips_()
 {
-    return false;
+    Dimension               skeleton;
+    DistanceType            max_distance;
+    std::string             infilename, diagram_name;
+    diagram_name = "vietoris_diagramus";
+
+    //program_options(argc, argv, infilename, skeleton, max_distance, diagram_name);
+    std::ofstream           diagram_out(diagram_name.c_str());
+    std::cout << "Diagram:         " << diagram_name << std::endl;
+
+    PointContainer          points;
+
+    for(auto iter = pts_.begin(); iter != pts_.end(); iter++)
+    {
+        points.push_back(Point());
+
+        TPoint tp = *iter;
+        //x = tp.at(0); y = tp.at(1); z = tp.at(2);
+
+        points.back().push_back(tp.at(0));
+        points.back().push_back(tp.at(1));
+        points.back().push_back(tp.at(2));
+    }
+
+    //infilename = "./dataset/sphere_100.obj";
+    //read_points_beta(infilename, points);
+
+    PairDistances           distances(points);
+    Generator               rips(distances);
+    Generator::Evaluator    size(distances);
+    Fltr                    f;
+
+    //Dimension(&skeleton)->default_value(2);   //"Dimension of the Rips complex we want to compute")
+    skeleton = 3;
+    max_distance = Infinity;
+    //DistanceType>(&max_distance)->default_value(Infinity);    //"Maximum value for the Rips complex construction")
+    //std::string>(&diagram_name);                              //"Filename where to output the persistence diagram");
+
+    //qDebug() << "do sm smo prsli";
+
+    // Generate 2-skeleton of the Rips complex for epsilon = 50
+    rips.generate(skeleton, max_distance, make_push_back_functor(f));
+    std::cout << "# Generated complex of size: " << f.size() << std::endl;
+
+    //qDebug() << "do sm smo prsli 2";
+
+    // Generate filtration with respect to distance and compute its persistence
+    f.sort(Generator::Comparison(distances));
+
+    //Timer persistence_timer; persistence_timer.start();
+    DynamicPersistence p(f);
+    p.pair_simplices();
+    //persistence_timer.stop();
+
+#if 1
+    // Output cycles
+    DynamicPersistence::SimplexMap<Fltr>   m = p.make_simplex_map(f);
+    for (DynamicPersistence::iterator cur = p.begin(); cur != p.end(); ++cur)
+    {
+        const DynamicPersistence::Cycle& cycle = cur->cycle;
+
+        if (!cur->sign())        // only negative simplices have non-empty cycles
+        {
+            DynamicPersistence::OrderIndex birth = cur->pair;      // the cycle that cur killed was born when we added birth (another simplex)
+
+            const Smplx& b = m[birth];
+            const Smplx& d = m[cur];
+
+            // if (b.dimension() != 1) continue;
+            // std::cout << "Pair: (" << size(b) << ", " << size(d) << ")" << std::endl;
+            if (b.dimension() >= skeleton) continue;
+            diagram_out << b.dimension() << " " << size(b) << " " << size(d) << std::endl;
+        } else if (cur->unpaired())    // positive could be unpaired
+        {
+            const Smplx& b = m[cur];
+            // if (b.dimension() != 1) continue;
+
+            // std::cout << "Unpaired birth: " << size(b) << std::endl;
+            // cycle = cur->chain;      // TODO
+            if (b.dimension() >= skeleton) continue;
+            diagram_out << b.dimension() << " " << size(b) << " inf" << std::endl;
+        }
+
+        // Iterate over the cycle
+        // for (Persistence::Cycle::const_iterator si =  cycle.begin();
+        //                                                          si != cycle.end();     ++si)
+        // {
+        //     const Smplx& s = m[*si];
+        //     //std::cout << s.dimension() << std::endl;
+        //     const Smplx::VertexContainer& vertices = s.vertices();          // std::vector<Vertex> where Vertex = Distances::IndexType
+        //     AssertMsg(vertices.size() == s.dimension() + 1, "dimension of a simplex is one less than the number of its vertices");
+        //     std::cout << vertices[0] << " " << vertices[1] << std::endl;
+        // }
+    }
+#endif
+
+    //persistence_timer.check("# Persistence timer");
+
+    qDebug() << "Rips is done right now yo!";
+    return true;
 }
 
