@@ -87,6 +87,9 @@ int main(int argc, char **argv) {
     deltaSpinner->setSingleStep(0.5);
     deltaSpinner->setValue(1.0);
 
+    QObject::connect(deltaSpinner, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+                     [&] (double val) { t.set_distance(val); });
+
     QGroupBox *samplePercentGroupBox = new QGroupBox(QStringLiteral("Sample percent"));
 
     QSlider *samplePercentSlider = new QSlider(Qt::Horizontal, widget);

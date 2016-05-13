@@ -22,6 +22,8 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/map.hpp>
 
+#include <QVector3D>
+
 // ---------------------------------------------------
 // This could go to some utils file
 #include <sstream>
@@ -212,6 +214,7 @@ bool Triangulation::calc_rips_()
 
     //program_options(argc, argv, infilename, skeleton, max_distance, diagram_name);
     std::ofstream           diagram_out(diagram_name.c_str());
+    QVector<QVector3D> homology;
     std::cout << "Diagram:         " << diagram_name << std::endl;
 
     PointContainer          points;
@@ -238,7 +241,9 @@ bool Triangulation::calc_rips_()
 
     //Dimension(&skeleton)->default_value(2);   //"Dimension of the Rips complex we want to compute")
     skeleton = 3;
-    max_distance = Infinity;
+    //max_distance = Infinity;
+    max_distance = distance_;
+
     //DistanceType>(&max_distance)->default_value(Infinity);    //"Maximum value for the Rips complex construction")
     //std::string>(&diagram_name);                              //"Filename where to output the persistence diagram");
 
@@ -261,6 +266,32 @@ bool Triangulation::calc_rips_()
 #if 1
     // Output cycles
     DynamicPersistence::SimplexMap<Fltr>   m = p.make_simplex_map(f);
+
+/*
+    //Persistence::SimplexMap<AlphaFiltration> m = p.make_simplex_map(af);
+    for(auto iter = p.begin(); iter != p.end(); iter++)
+    {
+        if(m[iter].dimension() < 3 || simplex_width(m[iter]) > distance_ )
+            continue;
+
+        const AlphaSimplex3D::VertexContainer& vertices = m[iter].vertices();
+
+        if(vertices.size() == 3)
+        {
+            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
+        }
+
+        else if(vertices.size() == 4)
+        {
+            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
+            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[3]).point());
+            add_trig(this, (*vertices[0]).point(), (*vertices[2]).point(), (*vertices[3]).point());
+            add_trig(this, (*vertices[1]).point(), (*vertices[2]).point(), (*vertices[3]).point());
+        }
+    }
+*/
+
+
     for (DynamicPersistence::iterator cur = p.begin(); cur != p.end(); ++cur)
     {
         const DynamicPersistence::Cycle& cycle = cur->cycle;
@@ -276,7 +307,9 @@ bool Triangulation::calc_rips_()
             // std::cout << "Pair: (" << size(b) << ", " << size(d) << ")" << std::endl;
             if (b.dimension() >= skeleton) continue;
             diagram_out << b.dimension() << " " << size(b) << " " << size(d) << std::endl;
-        } else if (cur->unpaired())    // positive could be unpaired
+            homology.append({b.dimension(), size(b), size(d)});
+        }
+        else if (cur->unpaired())    // positive could be unpaired
         {
             const Smplx& b = m[cur];
             // if (b.dimension() != 1) continue;
@@ -285,6 +318,7 @@ bool Triangulation::calc_rips_()
             // cycle = cur->chain;      // TODO
             if (b.dimension() >= skeleton) continue;
             diagram_out << b.dimension() << " " << size(b) << " inf" << std::endl;
+            homology.append({b.dimension(), size(b), std::numeric_limits<double>::max()});
         }
 
         // Iterate over the cycle
@@ -302,7 +336,12 @@ bool Triangulation::calc_rips_()
 
     //persistence_timer.check("# Persistence timer");
 
-    qDebug() << "Rips is done right now yo!";
+    QVector<double> homo_count(skeleton, 0);
+
+    // calculate homology
+    Q_FOREACH (auto h, homology) homo_count[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
+
+    qDebug() << "Rips homology:" << homo_count;
     return true;
 }
 
