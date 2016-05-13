@@ -27,14 +27,6 @@
 int main(int argc, char **argv) {
 
     Triangulation t;
-    t.set_in_file("dataset/sphere_1000.obj");
-    t.set_mode(Triangulation::alpha_shapes);
-    t.calculate();
-    TriangleList dummyTrig = t.get_triangles();
-
-    qDebug("Found %d triangles!", (int)t.get_triangles().size());
-    //exit(0);
-
     QApplication app(argc, argv);
 
     QSurfaceFormat format;
@@ -63,6 +55,8 @@ int main(int argc, char **argv) {
     QGroupBox *filesGroupBox = new QGroupBox(QStringLiteral("Dataset"));
 
     QComboBox *filesList = new QComboBox(widget);
+    QObject::connect(filesList, &QComboBox::currentTextChanged,
+                     [&] (const QString& choice) { t.set_in_file(("dataset/" + choice).toUtf8().constData()); });
 
     QDirIterator iter("dataset/", QStringList() << "*.obj", QDir::Files, QDirIterator::Subdirectories);
     while (iter.hasNext()) {
@@ -73,9 +67,16 @@ int main(int argc, char **argv) {
     QGroupBox *methodGroupBox = new QGroupBox(QStringLiteral("Method"));
 
     QComboBox *methodList = new QComboBox(widget);
-    methodList->addItem(QStringLiteral("Čech complex"));
-    methodList->addItem(QStringLiteral("Vietoris-Rips"));
-    methodList->addItem(QStringLiteral("α-shapes"));
+    QString methodCech = "Čech complex";  methodList->addItem(methodCech);
+    QString methodViet = "Vietoris-Rips"; methodList->addItem(methodViet);
+    QString methodAlph = "α-shapes";      methodList->addItem(methodAlph);
+
+    QObject::connect(methodList, &QComboBox::currentTextChanged,
+        [&] (const QString& choice) {
+        if(choice == methodCech)      t.set_mode(Triangulation::cech);
+        else if(choice == methodViet) t.set_mode(Triangulation::rips);
+        else                          t.set_mode(Triangulation::alpha_shapes);
+    });
 
     QGroupBox *selectionGroupBox = new QGroupBox(QStringLiteral("Delta parameter"));
 
@@ -94,6 +95,9 @@ int main(int argc, char **argv) {
     samplePercentSlider->setTickInterval(1);
     samplePercentSlider->setEnabled(true);
     samplePercentSlider->setSliderPosition(100);
+
+    QObject::connect(samplePercentSlider, &QSlider::sliderMoved,
+                     [&] (int val) { t.set_point_filtration((float)val / 100); });
 
     /*
     QGroupBox *dimensionGroupBox = new QGroupBox(QStringLiteral("Dimensions"));
@@ -138,7 +142,7 @@ int main(int argc, char **argv) {
     */
 
     QObject::connect(confirmButton, &QPushButton::clicked,
-                     [=]{plot->redraw(dummyTrig);});
+                     [&] { t.calculate(); qInfo("Found: %d", t.get_triangles().size()); plot->redraw(t.get_triangles()); });
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});

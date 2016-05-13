@@ -10,6 +10,9 @@
 #include <iostream>
 
 #include <qdebug.h>
+#include <qtextstream.h>
+#include <qfile.h>
+
 #include <fstream>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -33,30 +36,72 @@ std::vector<std::string> split(const std::string &s, char delim) {
     split(s, delim, elems);
     return elems;
 }
+
+double simplex_width(const AlphaSimplex3D simplex)
+{
+    double max = 0.0;
+    const uint dim = simplex.dimension();
+
+    for(uint i = 0; i <= dim; i++)
+        for(uint j = i + 1; j <= dim; j++)
+        {
+            double x1 = CGAL::to_double((*simplex.vertices()[i]).point().x());
+            double y1 = CGAL::to_double((*simplex.vertices()[i]).point().y());
+            double z1 = CGAL::to_double((*simplex.vertices()[i]).point().z());
+            double x2 = CGAL::to_double((*simplex.vertices()[j]).point().x());
+            double y2 = CGAL::to_double((*simplex.vertices()[j]).point().y());
+            double z2 = CGAL::to_double((*simplex.vertices()[j]).point().z());
+
+            double d = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2);
+            max = d > max ? d : max;
+        }
+
+    qDebug("%f", max);
+    return max;
+}
+
+void add_trig(Triangulation* t, CGAL::Point_3<CGAL::Epeck> pt1, CGAL::Point_3<CGAL::Epeck> pt2, CGAL::Point_3<CGAL::Epeck> pt3)
+{
+    TPoint p1 = { CGAL::to_double(pt1.x()), CGAL::to_double(pt1.y()), CGAL::to_double(pt1.z()) };
+    TPoint p2 = { CGAL::to_double(pt2.x()), CGAL::to_double(pt2.y()), CGAL::to_double(pt2.z()) };
+    TPoint p3 = { CGAL::to_double(pt3.x()), CGAL::to_double(pt3.y()), CGAL::to_double(pt3.z()) };
+    TTriangle to_add = { p1, p2, p3 };
+    t->add_triangle(to_add);
+}
+
 // ---------------------------------------------------
 
 typedef Filtration<AlphaSimplex3D>              AlphaFiltration;
 typedef StaticPersistence<>                     Persistence;
 typedef PersistenceDiagram<>                    PDgm;
 
-bool Triangulation::set_in_file(std::string infile)
+bool Triangulation::set_in_file(QString infile)
 {
-    std::ifstream f (infile);
-    std::string line;
+    QFile file(infile);
 
-    if (!f.is_open())
-        return false;
-
-    while ( getline (f, line) )
+    if(!file.open(QIODevice::ReadOnly))
     {
+        qDebug("Bad file!");
+        return false;
+    }
+
+    QTextStream in(&file);
+    while(!in.atEnd())
+    {
+        QString line = in.readLine();
         if(!(line[0] == 'v' && line[1] == ' '))
             continue;
 
-        std::vector<std::string> tmp = split(line, ' ');
-        std::array<double, 3> pt = {std::stod(tmp[1]), std::stod(tmp[2]), std::stod(tmp[3])};
+        QStringList  fields = line.left(line.length() - 2).split(",");
+        double x = fields[0].toDouble();
+        double y = fields[1].toDouble();
+        double z = fields[2].toDouble();
+
+        TPoint pt = {x, y, z};
         orig_pts_.push_back(pt);
     }
 
+    qDebug("Good file :)");
     return true;
 }
 
@@ -67,6 +112,7 @@ bool Triangulation::calculate()
     assert(prob_ <= 1 && prob_ > 0);
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
+    done_ = false;
     switch(mode_)
     {
     case alpha_shapes: return calc_alphashapes_();
@@ -74,6 +120,7 @@ bool Triangulation::calculate()
     case cech:         return calc_cech_();
     default:           return false;
     }
+    done_ = true;
 }
 
 bool Triangulation::calc_cech_() { return false; }
@@ -108,27 +155,23 @@ bool Triangulation::calc_alphashapes_()
     Persistence::SimplexMap<AlphaFiltration> m = p.make_simplex_map(af);
     for(auto iter = p.begin(); iter != p.end(); iter++)
     {
-        auto vertices = m[iter].vertices();
-
-        //TODO: handle 4D simplexes!!
-        if(vertices.size() != 3)
+        if(m[iter].dimension() < 3 || simplex_width(m[iter]) > distance_ )
             continue;
 
-        TTriangle trig;
-        uint idx = 0;
-        for(auto v = vertices.begin(); v != vertices.end(); v++)
-        {
-            CGAL::Point_3<CGAL::Epeck> pt = (**v).point();
+        const AlphaSimplex3D::VertexContainer& vertices = m[iter].vertices();
 
-            trig[idx] = {
-                    CGAL::to_double(pt.x()),
-                    CGAL::to_double(pt.y()),
-                    CGAL::to_double(pt.z())
-            };
-            idx++;
+        if(vertices.size() == 3)
+        {
+            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
         }
 
-        triangles_.push_back(trig);
+        else if(vertices.size() == 4)
+        {
+            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
+            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[3]).point());
+            add_trig(this, (*vertices[0]).point(), (*vertices[2]).point(), (*vertices[3]).point());
+            add_trig(this, (*vertices[1]).point(), (*vertices[2]).point(), (*vertices[3]).point());
+        }
     }
 
     return true;
@@ -138,3 +181,4 @@ bool Triangulation::calc_rips_()
 {
     return false;
 }
+
