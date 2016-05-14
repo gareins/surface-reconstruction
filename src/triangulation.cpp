@@ -1,4 +1,4 @@
-#include "Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "../../Dionysus/examples/alphashapes/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
@@ -23,6 +23,9 @@
 #include <boost/serialization/map.hpp>
 
 #include <QVector3D>
+
+#include "Miniball_dynamic_d.h"
+
 
 // ---------------------------------------------------
 // This could go to some utils file
@@ -131,7 +134,7 @@ bool Triangulation::calculate()
     }
     done_ = true;
 }
-
+/*
 void Triangulation::add_simplices(CechFiltration& sv, int d, const PointContainerMB& points)
 {
     PointIndex indices[d+1];
@@ -166,6 +169,12 @@ void Triangulation::add_simplices(CechFiltration& sv, int d, const PointContaine
         }
     }
 }
+*/
+
+typedef std::vector<PointMB> PointContainerMB;
+typedef unsigned int PointIndex;
+typedef Simplex<PointIndex, double> SmplxCh;
+typedef Filtration<SmplxCh> CechFiltration;
 
 bool Triangulation::calc_cech_()
 {
@@ -188,22 +197,56 @@ bool Triangulation::calc_cech_()
     //rInfo("Reserved SimplexVector of size: %d", num_simplices);
     */
 
-    CechFiltration cf;
+    CechFiltration sv;
     for (int i = 0; i <= homology_dim + 1; ++i)
-        add_simplices(cf, i, points);
+    {
+        //add_simplices(cf, i, points);
+        int d = i;
+        PointIndex indices[d+1];
+        for (int i = 0; i < d+1; ++i)
+            indices[i] = d - i;
+
+        while(indices[d] < points.size() - d)
+        {
+            // Add simplex
+            Miniball mb(points[indices[0]].dim());
+            SmplxCh s;
+            for (int i = 0; i < d+1; ++i)
+            {
+                s.add(indices[i]);
+                mb.check_in(points[indices[i]]);
+            }
+            mb.build();
+            s.data() = mb.squared_radius();
+            sv.push_back(s);
+
+
+            // Advance indices
+            for (int i = 0; i < d+1; ++i)
+            {
+                ++indices[i];
+                if (indices[i] < points.size() - i)
+                {
+                    for (int j = i-1; j >= 0; --j)
+                        indices[j] = indices[j+1] + 1;
+                    break;
+                }
+            }
+        }
+    }
     //rInfo("Size of SimplexVector: %d", cf.size());
 
     // Sort the filtration
-    cf.sort(DataDimensionComparison<SmplxCh>());
+    sv.sort(DataDimensionComparison<SmplxCh>());
     //rInfo("Filtration initialized");
 
     // Compute persistence
-    Persistence p(cf);
+    Persistence p(sv);
     rInfo("Persistence initialized");
     p.pair_simplices();
     rInfo("Simplices paired");
 
-    Persistence::SimplexMap<CechFiltration>     m = p.make_simplex_map(cf);
+    Persistence::SimplexMap<CechFiltration>     m = p.make_simplex_map(sv);
     std::map<Dimension, PDgm> dgms;
     init_diagrams(dgms, p.begin(), p.end(),
                   evaluate_through_map(m, SmplxCh::DataEvaluator()),
