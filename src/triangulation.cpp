@@ -122,6 +122,14 @@ bool Triangulation::calculate()
     assert(prob_ <= 1 && prob_ > 0);
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
+    /*
+    qDebug() << pts_.at(0)[0] << " " << pts_.at(0)[1] << " " << pts_.at(0)[2];
+    qDebug() << pts_.at(1)[0] << " " << pts_.at(1)[1] << " " << pts_.at(1)[2];
+    qDebug() << pts_.at(2)[0] << " " << pts_.at(2)[1] << " " << pts_.at(2)[2];
+    qDebug() << pts_.at(3)[0] << " " << pts_.at(3)[1] << " " << pts_.at(3)[2];
+    qDebug() << "-------";
+    */
+
     done_ = false;
     switch(mode_)
     {
@@ -133,6 +141,8 @@ bool Triangulation::calculate()
     done_ = true;
 }
 
+//bool Triangulation::calc_cech_() { return false; }
+/**/
 typedef std::vector<PointMB> PointContainerMB;
 typedef unsigned int PointIndex;
 typedef Simplex<PointIndex, double> SmplxCh;
@@ -186,13 +196,11 @@ bool Triangulation::calc_cech_()
     }
 
     int homology_dim = 2;
-    /*
     // Compute simplices with their Cech values
-    int num_simplices = 0;
-    for (int i = 0; i <= homology_dim + 1; ++i)
-        num_simplices += choose(pts_.size(), i+1);
+//    int num_simplices = 0;
+//    for (int i = 0; i <= homology_dim + 1; ++i)
+//        num_simplices += choose(pts_.size(), i+1);
     //rInfo("Reserved SimplexVector of size: %d", num_simplices);
-    */
 
     CechFiltration cf;
     for (int i = 0; i <= homology_dim + 1; ++i) {
@@ -217,11 +225,9 @@ bool Triangulation::calc_cech_()
                   evaluate_through_map(m,  SmplxCh::DimensionExtractor()));
 
 
-    /*
-    for (int i = 0; i <= homology_dim; ++i) {
-        std::cout << i << std::endl << dgms[i] << std::endl;
-    }
-    */
+//    for (int i = 0; i <= homology_dim; ++i) {
+//        std::cout << i << std::endl << dgms[i] << std::endl;
+//    }
 
     QVector<QVector3D> homology;
     for (int i = 0; i <= homology_dim; ++i) {
@@ -240,6 +246,7 @@ bool Triangulation::calc_cech_()
 
     return true;
 }
+/**/
 
 int Triangulation::calc_euler()
 {
@@ -316,6 +323,12 @@ typedef         PersistenceDiagram<>                                    PDgm;
 
 bool Triangulation::calc_rips_()
 {
+    qDebug() << pts_.at(0)[0] << " " << pts_.at(0)[1] << " " << pts_.at(0)[2];
+    qDebug() << pts_.at(1)[0] << " " << pts_.at(1)[1] << " " << pts_.at(1)[2];
+    qDebug() << pts_.at(2)[0] << " " << pts_.at(2)[1] << " " << pts_.at(2)[2];
+    qDebug() << pts_.at(3)[0] << " " << pts_.at(3)[1] << " " << pts_.at(3)[2];
+    qDebug() << "-------";
+
     Dimension               skeleton;
     DistanceType            max_distance;
     std::string             infilename, diagram_name;
@@ -376,30 +389,28 @@ bool Triangulation::calc_rips_()
     // Output cycles
     DynamicPersistence::SimplexMap<Fltr>   m = p.make_simplex_map(f);
 
-/*
-    //Persistence::SimplexMap<AlphaFiltration> m = p.make_simplex_map(af);
-    for(auto iter = p.begin(); iter != p.end(); iter++)
-    {
-        if(m[iter].dimension() < 3 || simplex_width(m[iter]) > distance_ )
+    for(auto iter = p.begin(); iter != p.end(); iter++) {
+
+        if(m[iter].dimension() < 3 /*|| simplex_width(m[iter]) > distance_ */)
             continue;
 
-        const AlphaSimplex3D::VertexContainer& vertices = m[iter].vertices();
-
-        if(vertices.size() == 3)
-        {
-            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
+        const std::vector<unsigned int> vtxs = m[iter].vertices();
+        if(vtxs.size() == 3) {
+            TTriangle to_add = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[2]] };
+            add_triangle(to_add);
+        }
+        else if(vtxs.size() == 4) {
+            TTriangle to_add1 = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[2]] };
+            TTriangle to_add2 = { pts_[vtxs[1]], pts_[vtxs[2]], pts_[vtxs[3]] };
+            TTriangle to_add3 = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[3]] };
+            add_triangle(to_add1);
+            add_triangle(to_add2);
+            add_triangle(to_add3);
         }
 
-        else if(vertices.size() == 4)
-        {
-            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
-            add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[3]).point());
-            add_trig(this, (*vertices[0]).point(), (*vertices[2]).point(), (*vertices[3]).point());
-            add_trig(this, (*vertices[1]).point(), (*vertices[2]).point(), (*vertices[3]).point());
-        }
+
+        qDebug() << pts_.at(vtxs[0])[0] << " " << pts_.at(vtxs[0])[1] << " " << pts_.at(vtxs[0])[2];
     }
-*/
-
 
     for (DynamicPersistence::iterator cur = p.begin(); cur != p.end(); ++cur)
     {
