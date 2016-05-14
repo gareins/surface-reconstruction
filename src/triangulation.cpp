@@ -1,4 +1,4 @@
-#include "../../Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "Dionysus/examples/alphashapes/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
@@ -119,6 +119,8 @@ bool Triangulation::calculate()
     assert(prob_ <= 1 && prob_ > 0);
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
+    std::cout << mode_ << std::endl;
+
     done_ = false;
     switch(mode_)
     {
@@ -130,7 +132,88 @@ bool Triangulation::calculate()
     done_ = true;
 }
 
-bool Triangulation::calc_cech_() { return false; }
+void Triangulation::add_simplices(CechFiltration& sv, int d, const PointContainerMB& points)
+{
+    PointIndex indices[d+1];
+    for (int i = 0; i < d+1; ++i)
+        indices[i] = d - i;
+
+    while(indices[d] < points.size() - d)
+    {
+        // Add simplex
+        Miniball mb(points[indices[0]].dim());
+        SmplxCh s;
+        for (int i = 0; i < d+1; ++i)
+        {
+            s.add(indices[i]);
+            mb.check_in(points[indices[i]]);
+        }
+        mb.build();
+        s.data() = mb.squared_radius();
+        sv.push_back(s);
+
+
+        // Advance indices
+        for (int i = 0; i < d+1; ++i)
+        {
+            ++indices[i];
+            if (indices[i] < points.size() - i)
+            {
+                for (int j = i-1; j >= 0; --j)
+                    indices[j] = indices[j+1] + 1;
+                break;
+            }
+        }
+    }
+}
+
+bool Triangulation::calc_cech_()
+{
+    PointContainerMB points;
+    for (auto iter = pts_.begin(); iter != pts_.end(); iter++) {
+        TPoint tp = *iter;
+        PointMB p(3);
+        for (int i = 0; i < 3; ++i) {
+            p[i] = tp.at(i);
+        }
+        points.push_back(p);
+    }
+
+    int homology_dim = 3;
+    /*
+    // Compute simplices with their Cech values
+    int num_simplices = 0;
+    for (int i = 0; i <= homology_dim + 1; ++i)
+        num_simplices += choose(pts_.size(), i+1);
+    //rInfo("Reserved SimplexVector of size: %d", num_simplices);
+    */
+
+    CechFiltration cf;
+    for (int i = 0; i <= homology_dim + 1; ++i)
+        add_simplices(cf, i, points);
+    //rInfo("Size of SimplexVector: %d", cf.size());
+
+    // Sort the filtration
+    cf.sort(DataDimensionComparison<SmplxCh>());
+    //rInfo("Filtration initialized");
+
+    // Compute persistence
+    Persistence p(cf);
+    rInfo("Persistence initialized");
+    p.pair_simplices();
+    rInfo("Simplices paired");
+
+    Persistence::SimplexMap<CechFiltration>     m = p.make_simplex_map(cf);
+    std::map<Dimension, PDgm> dgms;
+    init_diagrams(dgms, p.begin(), p.end(),
+                  evaluate_through_map(m, SmplxCh::DataEvaluator()),
+                  evaluate_through_map(m,  SmplxCh::DimensionExtractor()));
+
+    for (int i = 0; i <= homology_dim; ++i) {
+        std::cout << i << std::endl << dgms[i] << std::endl;
+    }
+    return true;
+}
 
 int Triangulation::calc_euler()
 {

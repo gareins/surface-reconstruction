@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 QT += qml quick widgets core gui
-CONFIG += c++11
+CONFIG += c++11 no_keywords
 
 INCLUDEPATH += $$PWD/Dionysus/include/
 
@@ -19,7 +19,8 @@ SOURCES += src/main.cpp \
 HEADERS += \
     src/geometryengine.h \
     src/surfacegraph.h \
-    src/triangulation.h
+    src/triangulation.h \
+    src/Miniball_dynamic_d.h
 
 OTHER_FILES += doc/src/* \
                doc/images/* \

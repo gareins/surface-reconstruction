@@ -77,6 +77,7 @@ int main(int argc, char **argv) {
         else if(choice == methodViet) t.set_mode(Triangulation::rips);
         else                          t.set_mode(Triangulation::alpha_shapes);
     });
+    t.set_mode(Triangulation::cech);
 
     QGroupBox *selectionGroupBox = new QGroupBox(QStringLiteral("Delta parameter"));
 

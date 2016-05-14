@@ -4,11 +4,22 @@
 #include <array>
 #include <qstring.h>
 
+#include <geometry/l2distance.h>
+#include <topology/simplex.h>
+#include <topology/filtration.h>
+
+#include "Miniball_dynamic_d.h"
+
 typedef std::array<double, 3> TPoint;
 typedef std::array<TPoint, 3> TTriangle;
 
 typedef std::vector<TPoint > PointList;
 typedef std::vector<TTriangle > TriangleList;
+
+typedef std::vector<PointMB> PointContainerMB;
+typedef unsigned int PointIndex;
+typedef Simplex<PointIndex, double> SmplxCh;
+typedef Filtration<SmplxCh> CechFiltration;
 
 // Wrapper...
 class Triangulation
@@ -35,6 +46,7 @@ private:
     bool calc_cech_();
     int calc_euler();
     int calc_homology();
+    void add_simplices(CechFiltration& sv, int d, const PointContainerMB& points);
 
     bool done_;
     double distance_;
