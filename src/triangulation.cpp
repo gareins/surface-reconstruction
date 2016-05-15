@@ -1,4 +1,4 @@
-#include "Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "examples/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
@@ -268,7 +268,7 @@ bool Triangulation::calc_cech_()
 int Triangulation::calc_euler()
 {
     int euler = 0;
-    for (int i = 0; i < homo_count_.size(); i++) {
+    for (uint i = 0; i < homo_count_.size(); i++) {
         euler += (pow(-1,i)*homo_count_[i]);
     }
     return euler;

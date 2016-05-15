@@ -4,7 +4,6 @@
 #include <array>
 #include <qstring.h>
 
-#include <geometry/l2distance.h>
 #include <topology/simplex.h>
 #include <topology/filtration.h>
 
@@ -12,7 +11,6 @@
 #include <QVector3D>
 
 typedef std::array<double, 3> TPoint;
-//typedef std::array<TPoint, 2> TPoint;
 typedef std::array<TPoint, 3> TTriangle;
 
 typedef std::vector<TPoint> PointList;
