@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
     QSurfaceFormat::setDefaultFormat(format);
 
     app.setApplicationName("Surface Reconstruction");
-    //app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
 
     QWidget *graph = new QWidget;
@@ -156,8 +155,8 @@ int main(int argc, char **argv) {
                             qInfo("Found: %d", t.get_triangles().size());
                             plot->redraw(t.get_triangles());
                             h0label->setText("H0: "+QString::number(t.get_homology()[0]));
-                            h1label->setText("H0: "+QString::number(t.get_homology()[1]));
-                            h2label->setText("H0: "+QString::number(t.get_homology()[2]));});
+                            h1label->setText("H1: "+QString::number(t.get_homology()[1]));
+                            h2label->setText("H2: "+QString::number(t.get_homology()[2]));});
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});

@@ -337,15 +337,8 @@ bool Triangulation::calc_alphashapes_()
         }
     }
 
-    //persistence_timer.check("# Persistence timer");
-
     // calculate homology
     Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
-
-    //qDebug() << "Alpha homology:" << homo_count_;
-
-
-
 
     qDebug() << "Alpha shapes finished!";
     return true;
@@ -358,21 +351,13 @@ typedef         PairDistances::IndexType                                Vertex;
 typedef         Rips<PairDistances>                                     Generator;
 typedef         Generator::Simplex                                      Smplx;
 typedef         Filtration<Smplx>                                       Fltr;
-// typedef         StaticPersistence<>                                     Persistence;
 typedef         DynamicPersistenceChains<>                              DynamicPersistence;
 typedef         PersistenceDiagram<>                                    PDgm;
 
 bool Triangulation::calc_rips_()
 {
     DistanceType            max_distance;
-    std::string             infilename, diagram_name;
-/*
-    diagram_name = "vietoris_diagramus";
 
-    //program_options(argc, argv, infilename, skeleton, max_distance, diagram_name);
-    std::ofstream           diagram_out(diagram_name.c_str());
-    std::cout << "Diagram:         " << diagram_name << std::endl;
-*/
     PointContainer          points;
 
     for(auto iter = pts_.begin(); iter != pts_.end(); iter++)
@@ -387,34 +372,23 @@ bool Triangulation::calc_rips_()
         points.back().push_back(tp.at(2));
     }
 
-    //infilename = "./dataset/sphere_100.obj";
-    //read_points_beta(infilename, points);
-
     PairDistances           distances(points);
     Generator               rips(distances);
     Generator::Evaluator    size(distances);
     Fltr                    f;
 
-    //Dimension(&skeleton)->default_value(2);   //"Dimension of the Rips complex we want to compute")
-    //max_distance = Infinity;
     max_distance = distance_;
 
-    //DistanceType>(&max_distance)->default_value(Infinity);    //"Maximum value for the Rips complex construction")
-    //std::string>(&diagram_name);                              //"Filename where to output the persistence diagram");
-
-    // Generate 2-skeleton of the Rips complex for epsilon = 50
+    // Generate n-skeleton of the Rips complex
     rips.generate(skeleton, max_distance, make_push_back_functor(f));
     std::cout << "# Generated complex of size: " << f.size() << std::endl;
 
     // Generate filtration with respect to distance and compute its persistence
     f.sort(Generator::Comparison(distances));
 
-    //Timer persistence_timer; persistence_timer.start();
     DynamicPersistence p(f);
     p.pair_simplices();
-    //persistence_timer.stop();
 
-#if 1
     // Output cycles
     DynamicPersistence::SimplexMap<Fltr>   m = p.make_simplex_map(f);
 
@@ -441,8 +415,6 @@ bool Triangulation::calc_rips_()
     QVector<QVector3D> homology;
     for (DynamicPersistence::iterator cur = p.begin(); cur != p.end(); ++cur)
     {
-        const DynamicPersistence::Cycle& cycle = cur->cycle;
-
         if (!cur->sign())        // only negative simplices have non-empty cycles
         {
             DynamicPersistence::OrderIndex birth = cur->pair;      // the cycle that cur killed was born when we added birth (another simplex)
@@ -450,45 +422,22 @@ bool Triangulation::calc_rips_()
             const Smplx& b = m[birth];
             const Smplx& d = m[cur];
 
-            // if (b.dimension() != 1) continue;
-            // std::cout << "Pair: (" << size(b) << ", " << size(d) << ")" << std::endl;
             if (b.dimension() >= skeleton) continue;
-            //diagram_out << b.dimension() << " " << size(b) << " " << size(d) << std::endl;
             homology.append({b.dimension(), size(b), size(d)});
         }
         else if (cur->unpaired())    // positive could be unpaired
         {
             const Smplx& b = m[cur];
-            // if (b.dimension() != 1) continue;
-
-            // std::cout << "Unpaired birth: " << size(b) << std::endl;
-            // cycle = cur->chain;      // TODO
             if (b.dimension() >= skeleton) continue;
-            //diagram_out << b.dimension() << " " << size(b) << " inf" << std::endl;
             homology.append({b.dimension(), size(b), std::numeric_limits<double>::max()});
         }
-
-        // Iterate over the cycle
-        // for (Persistence::Cycle::const_iterator si =  cycle.begin();
-        //                                                          si != cycle.end();     ++si)
-        // {
-        //     const Smplx& s = m[*si];
-        //     //std::cout << s.dimension() << std::endl;
-        //     const Smplx::VertexContainer& vertices = s.vertices();          // std::vector<Vertex> where Vertex = Distances::IndexType
-        //     AssertMsg(vertices.size() == s.dimension() + 1, "dimension of a simplex is one less than the number of its vertices");
-        //     std::cout << vertices[0] << " " << vertices[1] << std::endl;
-        // }
     }
-#endif
-
-    //persistence_timer.check("# Persistence timer");
-
-
 
     // calculate homology
     Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
 
-    //qDebug() << "Rips homology:" << homo_count_;
+    qDebug() << "Vietoris-Rips finished!";
+
     return true;
 }
 
