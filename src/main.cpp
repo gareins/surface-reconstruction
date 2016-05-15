@@ -114,8 +114,13 @@ int main(int argc, char **argv) {
     dimensionSlider->setSliderPosition(2);
     */
 
-    QRadioButton *transparencyRBttn = new QRadioButton(widget);
+    QPushButton *transparencyRBttn = new QPushButton(widget);
     transparencyRBttn->setText(QStringLiteral("Transparent"));
+    transparencyRBttn->setCheckable(true);
+
+    QPushButton *linesBttn = new QPushButton(widget);
+    linesBttn->setText(QStringLiteral("Show Lines"));
+    linesBttn->setCheckable(true);
 
     QPushButton *confirmButton = new QPushButton(widget);
     confirmButton->setText(QStringLiteral("Confirm"));
@@ -137,6 +142,7 @@ int main(int argc, char **argv) {
     //vLayout->addWidget(dimensionGroupBox);
     //vLayout->addWidget(dimensionSlider);
     vLayout->addWidget(transparencyRBttn);
+    vLayout->addWidget(linesBttn);
     vLayout->addWidget(confirmButton);
     vLayout->addWidget(homologyGroupBox);
     vLayout->addWidget(h0label);
@@ -155,7 +161,7 @@ int main(int argc, char **argv) {
     QObject::connect(confirmButton, &QPushButton::clicked,
                      [&] {  t.calculate();
                             qInfo("Found: %d", t.get_triangles().size());
-                            plot->redraw(t.get_triangles());
+                            plot->redraw(t.get_triangles(), t.get_lines(), t.get_points());
                             h0label->setText("H0: "+QString::number(t.get_homology()[0]));
                             h1label->setText("H1: "+QString::number(t.get_homology()[1]));
                             h2label->setText("H2: "+QString::number(t.get_homology()[2]));
@@ -163,6 +169,9 @@ int main(int argc, char **argv) {
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});
+
+    QObject::connect(linesBttn, &QRadioButton::toggled,
+                     [=]{plot->toggleLines(linesBttn->isChecked());});
 
     widget->show();
 #else

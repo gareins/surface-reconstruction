@@ -22,8 +22,9 @@ class SurfaceGraph : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     explicit SurfaceGraph(QWidget *parent = 0);
     ~SurfaceGraph();
-    void redraw(TriangleList triangles);
+    void redraw(TriangleList triangles, QVector<QVector3D> lines, QVector<QVector3D> points, bool dl = false);
     void toggleTransparency(bool isTransparent);
+    void toggleLines(bool show_lines);
 
 protected:
     void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
@@ -56,6 +57,7 @@ private:
 
     float zoom;
     bool isDragging;
+    bool display_lines;
 };
 
 #endif // MAINWIDGET_H

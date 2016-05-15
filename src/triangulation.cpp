@@ -127,6 +127,9 @@ bool Triangulation::calculate()
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
     triangles_.clear();
+    lines_.clear();
+    points_.clear();
+    homo_count_.clear();
     done_ = false;
 
     switch(mode_)
@@ -388,15 +391,27 @@ bool Triangulation::calc_rips_()
     p.pair_simplices();
 
     // Output cycles
-    DynamicPersistence::SimplexMap<Fltr>   m = p.make_simplex_map(f);
+    DynamicPersistence::SimplexMap<Fltr> m = p.make_simplex_map(f);
 
     for(auto iter = p.begin(); iter != p.end(); iter++) {
 
-        if(m[iter].dimension() < 3 /*|| simplex_width(m[iter]) > distance_ */)
-            continue;
+        if(m[iter].dimension() == 0 /*|| simplex_width(m[iter]) > distance_ */) continue;
 
         const std::vector<unsigned int> vtxs = m[iter].vertices();
-        if(vtxs.size() == 3) {
+
+        if(vtxs.size() == 1)
+        {
+            TPoint p = pts_[vtxs[0]];
+            points_.push_back(QVector3D(p[0], p[1], p[2]));
+        }
+        else if(vtxs.size() == 2)
+        {
+            TPoint p1 = pts_[vtxs[0]];
+            TPoint p2 = pts_[vtxs[1]];
+            lines_.push_back(QVector3D(p1[0], p1[1], p1[2]));
+            lines_.push_back(QVector3D(p2[0], p2[1], p2[2]));
+        }
+        else if(vtxs.size() == 3) {
             TTriangle to_add = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[2]] };
             add_triangle(to_add);
         }
@@ -432,9 +447,9 @@ bool Triangulation::calc_rips_()
     }
 
     // calculate homology
-    homo_count_.clear();
     Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
 
+    qDebug() << triangles_.size() << "triangles," << lines_.size() << "lines," << points_.size() << "points";
     qDebug() << "Vietoris-Rips finished!";
 
     return true;

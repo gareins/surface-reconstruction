@@ -14,10 +14,10 @@ GeometryEngine::GeometryEngine()
     initGeometry();
 }
 
-GeometryEngine::GeometryEngine(TriangleList triangles)
+GeometryEngine::GeometryEngine(TriangleList triangles, QVector<QVector3D> lines, QVector<QVector3D> points)
     : indexBuf(QOpenGLBuffer::IndexBuffer)
 {
-    initGeometry(triangles);
+    initGeometry(triangles, lines, points);
 }
 
 GeometryEngine::~GeometryEngine()
@@ -26,7 +26,7 @@ GeometryEngine::~GeometryEngine()
     indexBuf.destroy();
 }
 
-void GeometryEngine::initGeometry(TriangleList triangles)
+void GeometryEngine::initGeometry(TriangleList triangles, QVector<QVector3D> lines, QVector<QVector3D> points)
 {
     isTransparent = false;
 
@@ -37,6 +37,8 @@ void GeometryEngine::initGeometry(TriangleList triangles)
     // Generate 2 VBOs
     arrayBuf.create();
     indexBuf.create();
+    arrayBufLines.create();
+    arrayBufPoints.create();
 
     std::vector<VertexData> vertices;
     std::vector<GLuint> indices;
@@ -91,6 +93,18 @@ void GeometryEngine::initGeometry(TriangleList triangles)
     indexBuf.allocate(&indices[0], indices.size() * sizeof(GLuint));
 
     idxLen = indices.size();
+
+    if (!lines.empty())
+    {
+        arrayBufLines.bind();
+        arrayBufLines.allocate(&lines[0], lines.size() * sizeof(QVector3D));
+    }
+
+    if (!points.empty())
+    {
+        arrayBufPoints.bind();
+        arrayBufPoints.allocate(&points[0], points.size() * sizeof(QVector3D));
+    }
 }
 
 void GeometryEngine::drawGeometry(QOpenGLShaderProgram *program)
@@ -123,8 +137,50 @@ void GeometryEngine::drawGeometry(QOpenGLShaderProgram *program)
     }
 
     // Draw geometry using indices from VBO 1
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, idxLen, GL_UNSIGNED_INT, 0);
+}
 
+void GeometryEngine::drawLineGeometry(QOpenGLShaderProgram *program)
+{
+    arrayBufLines.bind();
+
+    // Tell OpenGL programmable pipeline how to locate vertex position data
+    int vertexLocation = program->attributeLocation("a_position");
+    program->enableAttributeArray(vertexLocation);
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(QVector3D));
+
+    /*if (isTransparent) {
+        glEnable (GL_BLEND);
+    }
+    else {
+        glDisable(GL_BLEND);
+    }*/
+
+    // lines and line color
+    program->setUniformValue("wireframe", true);
+    program->setUniformValue("wire_color", QVector4D(0,1,0,1));
+
+    // draw lines
+    int count = (int)arrayBufLines.size() / sizeof(QVector3D);
+    for (int i = 0; i < count; i += 2)
+        glDrawArrays(GL_LINES, i, 2);
+
+    // turn off the custom coloring
+    program->setUniformValue("wireframe", false);
+}
+
+void GeometryEngine::drawPointGeometry(QOpenGLShaderProgram *program)
+{
+    // points and point color
+    program->setUniformValue("wireframe", true);
+    program->setUniformValue("wire_color", QVector4D(0,1,0,1));
+
+    // draw points
+    // TODO
+
+    // turn off the custom coloring
+    program->setUniformValue("wireframe", false);
 }
 
 GLuint GeometryEngine::indexOf(std::vector<VertexData> verts, VertexData v) {

@@ -191,13 +191,21 @@ void SurfaceGraph::paintGL()
 
     // Draw geometry
     geometries->drawGeometry(&program);
+
+    if (display_lines)
+    {
+        geometries->drawLineGeometry(&program);
+        geometries->drawPointGeometry(&program);
+    }
 }
 
-void SurfaceGraph::redraw(TriangleList triangles)
+void SurfaceGraph::redraw(TriangleList triangles, QVector<QVector3D> lines, QVector<QVector3D> points, bool dl)
 {
+    display_lines = dl;
+
     makeCurrent();
     delete geometries;
-    geometries = new GeometryEngine(triangles);
+    geometries = new GeometryEngine(triangles, lines, points);
     doneCurrent();
 
     update();
@@ -208,3 +216,12 @@ void SurfaceGraph::toggleTransparency(bool isTransparent) {
 
     update();
 }
+
+void SurfaceGraph::toggleLines(bool show_lines)
+{
+    display_lines = show_lines;
+
+    update();
+}
+
+
