@@ -38,7 +38,7 @@ public:
 private:
     bool calc_alphashapes_();
     bool calc_rips_();
-    bool calc_cech_();
+    //bool calc_cech_();
     int calc_euler();
     int calc_homology();
     //void add_simplices(CechFiltration& sv, int d, const PointContainerMB& points);

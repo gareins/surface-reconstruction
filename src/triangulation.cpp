@@ -24,7 +24,7 @@
 
 #include <QVector3D>
 
-#include "Miniball_dynamic_d.h"
+//#include "Miniball_dynamic_d.h"
 
 
 // ---------------------------------------------------
@@ -102,7 +102,7 @@ bool Triangulation::set_in_file(QString infile)
         if(!(line[0] == 'v' && line[1] == ' '))
             continue;
 
-        QStringList  fields = line.left(line.length() - 2).split(",");
+        QStringList  fields = line.right(line.length() - 2).split(QString(", "));
         double x = fields[0].toDouble();
         double y = fields[1].toDouble();
         double z = fields[2].toDouble();
@@ -122,27 +122,18 @@ bool Triangulation::calculate()
     assert(prob_ <= 1 && prob_ > 0);
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
-    /*
-    qDebug() << pts_.at(0)[0] << " " << pts_.at(0)[1] << " " << pts_.at(0)[2];
-    qDebug() << pts_.at(1)[0] << " " << pts_.at(1)[1] << " " << pts_.at(1)[2];
-    qDebug() << pts_.at(2)[0] << " " << pts_.at(2)[1] << " " << pts_.at(2)[2];
-    qDebug() << pts_.at(3)[0] << " " << pts_.at(3)[1] << " " << pts_.at(3)[2];
-    qDebug() << "-------";
-    */
-
     done_ = false;
     switch(mode_)
     {
     case alpha_shapes: return calc_alphashapes_();
     case rips:         return calc_rips_();
-    case cech:         return calc_cech_();
+    //case cech:         return calc_cech_();
     default:           return false;
     }
     done_ = true;
 }
 
-//bool Triangulation::calc_cech_() { return false; }
-/**/
+/* * /
 typedef std::vector<PointMB> PointContainerMB;
 typedef unsigned int PointIndex;
 typedef Simplex<PointIndex, double> SmplxCh;
@@ -224,6 +215,25 @@ bool Triangulation::calc_cech_()
                   evaluate_through_map(m, SmplxCh::DataEvaluator()),
                   evaluate_through_map(m,  SmplxCh::DimensionExtractor()));
 
+    for(auto iter = p.begin(); iter != p.end(); iter++) {
+
+        if(m[iter].dimension() < 3 )
+            continue;
+
+        const std::vector<unsigned int> vtxs = m[iter].vertices();
+        if(vtxs.size() == 3) {
+            TTriangle to_add = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[2]] };
+            add_triangle(to_add);
+        }
+        else if(vtxs.size() == 4) {
+            TTriangle to_add1 = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[2]] };
+            TTriangle to_add2 = { pts_[vtxs[1]], pts_[vtxs[2]], pts_[vtxs[3]] };
+            TTriangle to_add3 = { pts_[vtxs[0]], pts_[vtxs[1]], pts_[vtxs[3]] };
+            add_triangle(to_add1);
+            add_triangle(to_add2);
+            add_triangle(to_add3);
+        }
+    }
 
 //    for (int i = 0; i <= homology_dim; ++i) {
 //        std::cout << i << std::endl << dgms[i] << std::endl;
@@ -323,22 +333,17 @@ typedef         PersistenceDiagram<>                                    PDgm;
 
 bool Triangulation::calc_rips_()
 {
-    qDebug() << pts_.at(0)[0] << " " << pts_.at(0)[1] << " " << pts_.at(0)[2];
-    qDebug() << pts_.at(1)[0] << " " << pts_.at(1)[1] << " " << pts_.at(1)[2];
-    qDebug() << pts_.at(2)[0] << " " << pts_.at(2)[1] << " " << pts_.at(2)[2];
-    qDebug() << pts_.at(3)[0] << " " << pts_.at(3)[1] << " " << pts_.at(3)[2];
-    qDebug() << "-------";
-
     Dimension               skeleton;
     DistanceType            max_distance;
     std::string             infilename, diagram_name;
+    QVector<QVector3D> homology;
+/*
     diagram_name = "vietoris_diagramus";
 
     //program_options(argc, argv, infilename, skeleton, max_distance, diagram_name);
     std::ofstream           diagram_out(diagram_name.c_str());
-    QVector<QVector3D> homology;
     std::cout << "Diagram:         " << diagram_name << std::endl;
-
+*/
     PointContainer          points;
 
     for(auto iter = pts_.begin(); iter != pts_.end(); iter++)
@@ -369,13 +374,9 @@ bool Triangulation::calc_rips_()
     //DistanceType>(&max_distance)->default_value(Infinity);    //"Maximum value for the Rips complex construction")
     //std::string>(&diagram_name);                              //"Filename where to output the persistence diagram");
 
-    //qDebug() << "do sm smo prsli";
-
     // Generate 2-skeleton of the Rips complex for epsilon = 50
     rips.generate(skeleton, max_distance, make_push_back_functor(f));
     std::cout << "# Generated complex of size: " << f.size() << std::endl;
-
-    //qDebug() << "do sm smo prsli 2";
 
     // Generate filtration with respect to distance and compute its persistence
     f.sort(Generator::Comparison(distances));
@@ -407,9 +408,6 @@ bool Triangulation::calc_rips_()
             add_triangle(to_add2);
             add_triangle(to_add3);
         }
-
-
-        qDebug() << pts_.at(vtxs[0])[0] << " " << pts_.at(vtxs[0])[1] << " " << pts_.at(vtxs[0])[2];
     }
 
     for (DynamicPersistence::iterator cur = p.begin(); cur != p.end(); ++cur)
@@ -426,7 +424,7 @@ bool Triangulation::calc_rips_()
             // if (b.dimension() != 1) continue;
             // std::cout << "Pair: (" << size(b) << ", " << size(d) << ")" << std::endl;
             if (b.dimension() >= skeleton) continue;
-            diagram_out << b.dimension() << " " << size(b) << " " << size(d) << std::endl;
+            //diagram_out << b.dimension() << " " << size(b) << " " << size(d) << std::endl;
             homology.append({b.dimension(), size(b), size(d)});
         }
         else if (cur->unpaired())    // positive could be unpaired
@@ -437,7 +435,7 @@ bool Triangulation::calc_rips_()
             // std::cout << "Unpaired birth: " << size(b) << std::endl;
             // cycle = cur->chain;      // TODO
             if (b.dimension() >= skeleton) continue;
-            diagram_out << b.dimension() << " " << size(b) << " inf" << std::endl;
+            //diagram_out << b.dimension() << " " << size(b) << " inf" << std::endl;
             homology.append({b.dimension(), size(b), std::numeric_limits<double>::max()});
         }
 

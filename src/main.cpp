@@ -67,17 +67,17 @@ int main(int argc, char **argv) {
     QGroupBox *methodGroupBox = new QGroupBox(QStringLiteral("Method"));
 
     QComboBox *methodList = new QComboBox(widget);
-    QString methodCech = "Čech complex";  methodList->addItem(methodCech);
     QString methodViet = "Vietoris-Rips"; methodList->addItem(methodViet);
+    //QString methodCech = "Čech complex";  methodList->addItem(methodCech);
     QString methodAlph = "α-shapes";      methodList->addItem(methodAlph);
 
     QObject::connect(methodList, &QComboBox::currentTextChanged,
         [&] (const QString& choice) {
-        if(choice == methodCech)      t.set_mode(Triangulation::cech);
-        else if(choice == methodViet) t.set_mode(Triangulation::rips);
+        if(choice == methodViet)      t.set_mode(Triangulation::rips);
+        //else if(choice == methodCech) t.set_mode(Triangulation::cech);
         else                          t.set_mode(Triangulation::alpha_shapes);
     });
-    t.set_mode(Triangulation::cech);
+    t.set_mode(Triangulation::rips);
 
     QGroupBox *selectionGroupBox = new QGroupBox(QStringLiteral("Delta parameter"));
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     QDoubleSpinBox *deltaSpinner = new QDoubleSpinBox(widget);
     deltaSpinner->setMinimum(0.0);
     deltaSpinner->setMaximum(5.0);
-    deltaSpinner->setSingleStep(0.5);
+    deltaSpinner->setSingleStep(0.05);
     deltaSpinner->setValue(1.0);
 
     QObject::connect(deltaSpinner, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),

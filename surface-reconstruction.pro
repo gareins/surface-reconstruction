@@ -19,8 +19,8 @@ SOURCES += src/main.cpp \
 HEADERS += \
     src/geometryengine.h \
     src/surfacegraph.h \
-    src/triangulation.h \
-    src/Miniball_dynamic_d.h
+    src/triangulation.h
+#    src/Miniball_dynamic_d.h
 
 OTHER_FILES += doc/src/* \
                doc/images/* \
