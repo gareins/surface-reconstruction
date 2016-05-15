@@ -1,6 +1,6 @@
 import numpy as np
 import gzip
-import urllib.request
+#import urllib.request
 import os
 
 print("Download from http://www.prinmath.com/csci5229/OBJ/index.html")
