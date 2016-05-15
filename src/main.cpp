@@ -124,6 +124,7 @@ int main(int argc, char **argv) {
     QLabel *h0label = new QLabel("H0: 0");
     QLabel *h1label = new QLabel("H1: 0");
     QLabel *h2label = new QLabel("H2: 0");
+    QLabel *eulerLabel = new QLabel("Euler: 0");
 
     vLayout->addWidget(filesGroupBox);
     vLayout->addWidget(filesList);
@@ -141,6 +142,7 @@ int main(int argc, char **argv) {
     vLayout->addWidget(h0label);
     vLayout->addWidget(h1label);
     vLayout->addWidget(h2label);
+    vLayout->addWidget(eulerLabel);
 
     /*
     std::cout << filesList->currentText().toUtf8().constData() << std::endl;
@@ -156,7 +158,8 @@ int main(int argc, char **argv) {
                             plot->redraw(t.get_triangles());
                             h0label->setText("H0: "+QString::number(t.get_homology()[0]));
                             h1label->setText("H1: "+QString::number(t.get_homology()[1]));
-                            h2label->setText("H2: "+QString::number(t.get_homology()[2]));});
+                            h2label->setText("H2: "+QString::number(t.get_homology()[2]));
+                            eulerLabel->setText("Euler: "+QString::number(t.calc_euler()));});
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});

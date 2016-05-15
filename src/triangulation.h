@@ -30,6 +30,7 @@ public:
     const TriangleList& get_triangles()           { return triangles_; }
     const PointList& get_chosen_pts()             { return pts_; }
     const std::vector<double>& get_homology()             { return homo_count_; }
+    int calc_euler();
 
     bool calculate();
 
@@ -39,9 +40,6 @@ private:
     bool calc_alphashapes_();
     bool calc_rips_();
     //bool calc_cech_();
-    int calc_euler();
-    int calc_homology();
-    //void add_simplices(CechFiltration& sv, int d, const PointContainerMB& points);
 
     bool done_;
     double distance_;

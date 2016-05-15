@@ -85,9 +85,8 @@ typedef Filtration<AlphaSimplex3D>              AlphaFiltration;
 typedef StaticPersistence<>                     Persistence;
 typedef PersistenceDiagram<>                    PDgm;
 
-Triangulation::Triangulation(): done_(false), distance_(1), prob_(1), mode_(alpha_shapes), homo_count_(3, 0)
+Triangulation::Triangulation(): done_(false), distance_(1), prob_(1), mode_(alpha_shapes), homo_count_(skeleton, 0)
 {
-
 }
 
 bool Triangulation::set_in_file(QString infile)
@@ -263,12 +262,11 @@ bool Triangulation::calc_cech_()
 
 int Triangulation::calc_euler()
 {
-    return 0;
-}
-
-int Triangulation::calc_homology()
-{
-    return 0;
+    int euler = 0;
+    for (int i = 0; i < homo_count_.size(); i++) {
+        euler += (pow(-1,i)*homo_count_[i]);
+    }
+    return euler;
 }
 
 bool Triangulation::calc_alphashapes_()
