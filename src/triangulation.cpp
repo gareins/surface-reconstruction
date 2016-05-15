@@ -127,6 +127,7 @@ bool Triangulation::calculate()
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
     triangles_.clear();
+    std::fill(homo_count_.begin(), homo_count_.end(), 0);
     done_ = false;
 
     switch(mode_)
@@ -319,6 +320,7 @@ bool Triangulation::calc_alphashapes_()
     }
 
     // TODO FIXME
+    /*
     QVector<QVector3D> homology;
     for (auto cur = p.begin(); cur != p.end(); ++cur) {
         if (!cur->sign()) {
@@ -331,7 +333,31 @@ bool Triangulation::calc_alphashapes_()
             }
 
             const AlphaSimplex3D& d = m[cur->pair];
+            homology.append({b.dimension(), sqrt(b.value()), sqrt(d.value())});
             //homology.append({b.dimension(), sqrt(b.data()[0]), sqrt(d.data()[0]));
+        }
+    }
+    */
+
+    QVector<QVector3D> homology;
+
+    std::map<Dimension, PDgm> dgms;
+    init_diagrams(dgms, p.begin(), p.end(),
+                  evaluate_through_map(m, AlphaSimplex3D::AlphaValueEvaluator()),
+                  evaluate_through_map(m, AlphaSimplex3D::DimensionExtractor()));
+    /*
+    std::cout << 0 << std::endl << dgms[0] << std::endl;
+    std::cout << 1 << std::endl << dgms[1] << std::endl;
+    std::cout << 2 << std::endl << dgms[2] << std::endl;
+    */
+
+    for (int i = 0; i < skeleton; ++i) {
+        //std::cout << i << std::endl;
+        for (auto iter = dgms[i].begin(); iter != dgms[i].end(); iter++) {
+            //std::cout << (*iter).x() << " " << (*iter).y() << std::endl;
+
+            // TODO wut kr arbitrarno *10?
+            homology.append({i, (*iter).x()*10, (*iter).y()*10});
         }
     }
 
@@ -432,7 +458,6 @@ bool Triangulation::calc_rips_()
     }
 
     // calculate homology
-    homo_count_.clear();
     Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
 
     qDebug() << "Vietoris-Rips finished!";
