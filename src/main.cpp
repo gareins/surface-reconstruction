@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     deltaSpinner->setMinimum(0.0);
     //deltaSpinner->setMaximum(5.0);
     deltaSpinner->setSingleStep(0.05);
-    deltaSpinner->setValue(3.0);
+    deltaSpinner->setValue(1.0);
 
     QObject::connect(deltaSpinner, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
                      [&] (double val) { t.set_distance(val); });
@@ -165,7 +165,9 @@ int main(int argc, char **argv) {
                             h0label->setText("H0: "+QString::number(t.get_homology()[0]));
                             h1label->setText("H1: "+QString::number(t.get_homology()[1]));
                             h2label->setText("H2: "+QString::number(t.get_homology()[2]));
-                            eulerLabel->setText("Euler: "+QString::number(t.calc_euler()));});
+                            eulerLabel->setText("Euler: "+QString::number(t.calc_euler()));
+                            plot->toggleLines(linesBttn->isChecked());
+                            plot->toggleTransparency(transparencyRBttn->isChecked());});
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});

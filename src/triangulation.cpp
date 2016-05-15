@@ -1,4 +1,4 @@
-#include "../../Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "Dionysus/examples/alphashapes/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
@@ -302,12 +302,24 @@ bool Triangulation::calc_alphashapes_()
     Persistence::SimplexMap<AlphaFiltration> m = p.make_simplex_map(af);
     for(auto iter = p.begin(); iter != p.end(); iter++)
     {
-        if(m[iter].dimension() < 3 || simplex_width(m[iter]) > distance_ )
+        if(m[iter].dimension() > 4 || simplex_width(m[iter]) > distance_ )
             continue;
 
         const AlphaSimplex3D::VertexContainer& vertices = m[iter].vertices();
 
-        if(vertices.size() == 3)
+        if(vertices.size() == 1)
+        {
+            TPoint p = { CGAL::to_double((*vertices[0]).point().x()), CGAL::to_double((*vertices[0]).point().y()), CGAL::to_double((*vertices[0]).point().z()) };
+            points_.push_back(QVector3D(p[0], p[1], p[2]));
+        }
+        else if(vertices.size() == 2)
+        {
+            TPoint p1 = { CGAL::to_double((*vertices[0]).point().x()), CGAL::to_double((*vertices[0]).point().y()), CGAL::to_double((*vertices[0]).point().z()) };
+            TPoint p2 = { CGAL::to_double((*vertices[1]).point().x()), CGAL::to_double((*vertices[1]).point().y()), CGAL::to_double((*vertices[1]).point().z()) };
+            lines_.push_back(QVector3D(p1[0], p1[1], p1[2]));
+            lines_.push_back(QVector3D(p2[0], p2[1], p2[2]));
+        }
+        else if(vertices.size() == 3)
         {
             add_trig(this, (*vertices[0]).point(), (*vertices[1]).point(), (*vertices[2]).point());
         }
@@ -320,26 +332,6 @@ bool Triangulation::calc_alphashapes_()
             add_trig(this, (*vertices[1]).point(), (*vertices[2]).point(), (*vertices[3]).point());
         }
     }
-
-    // TODO FIXME
-    /*
-    QVector<QVector3D> homology;
-    for (auto cur = p.begin(); cur != p.end(); ++cur) {
-        if (!cur->sign()) {
-
-            const AlphaSimplex3D& b = m[cur];
-
-            if (cur->unpaired()) {
-                homology.append({b.dimension(), sqrt(b.value()), std::numeric_limits<double>::max()});
-                continue;
-            }
-
-            const AlphaSimplex3D& d = m[cur->pair];
-            homology.append({b.dimension(), sqrt(b.value()), sqrt(d.value())});
-            //homology.append({b.dimension(), sqrt(b.data()[0]), sqrt(d.data()[0]));
-        }
-    }
-    */
 
     QVector<QVector3D> homology;
 
@@ -356,15 +348,17 @@ bool Triangulation::calc_alphashapes_()
     for (int i = 0; i < skeleton; ++i) {
         //std::cout << i << std::endl;
         for (auto iter = dgms[i].begin(); iter != dgms[i].end(); iter++) {
-            //std::cout << (*iter).x() << " " << (*iter).y() << std::endl;
+            std::cout << (*iter).x() << " " << (*iter).y() << std::endl;
 
-            // TODO wut kr arbitrarno *10?
-            homology.append({i, (*iter).x()*10, (*iter).y()*10});
+            homology.append({i, (*iter).x(), (*iter).y()});
         }
     }
 
+    std::cout << distance_ <<std::endl;
+
     // calculate homology
-    Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
+    // why is dist/4 "approximately" the correct value?
+    Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_/4.0 && distance_/4.0 <= h[2] ? 1 : 0;
 
     qDebug() << "Alpha shapes finished!";
     return true;

@@ -3,8 +3,8 @@ TEMPLATE = app
 QT += qml quick widgets core gui
 CONFIG += c++11 no_keywords
 
-#INCLUDEPATH += $$PWD/Dionysus/include/
-INCLUDEPATH += ../../Dionysus/include/
+INCLUDEPATH += $$PWD/Dionysus/include/
+#INCLUDEPATH += ../../Dionysus/include/
 
 LIBS += -lCGAL -lgmp -lmpfr -lboost_thread -lboost_system -lboost_filesystem -lboost_serialization
 
