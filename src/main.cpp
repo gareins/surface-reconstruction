@@ -83,9 +83,9 @@ int main(int argc, char **argv) {
     // TODO: tweak values
     QDoubleSpinBox *deltaSpinner = new QDoubleSpinBox(widget);
     deltaSpinner->setMinimum(0.0);
-    deltaSpinner->setMaximum(5.0);
+    //deltaSpinner->setMaximum(5.0);
     deltaSpinner->setSingleStep(0.05);
-    deltaSpinner->setValue(1.0);
+    deltaSpinner->setValue(3.0);
 
     QObject::connect(deltaSpinner, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
                      [&] (double val) { t.set_distance(val); });

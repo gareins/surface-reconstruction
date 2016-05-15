@@ -1,4 +1,4 @@
-#include "Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "../../Dionysus/examples/alphashapes/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
@@ -66,7 +66,7 @@ double simplex_width(const AlphaSimplex3D simplex)
             max = d > max ? d : max;
         }
 
-    qDebug("%f", max);
+    //qDebug("%f", max);
     return max;
 }
 
@@ -126,13 +126,15 @@ bool Triangulation::calculate()
     assert(prob_ <= 1 && prob_ > 0);
     pts_ = PointList(orig_pts_.begin(), orig_pts_.begin() + int(orig_pts_.size() * prob_));
 
+    triangles_.clear();
     done_ = false;
+
     switch(mode_)
     {
-    case alpha_shapes: return calc_alphashapes_();
-    case rips:         return calc_rips_();
-    //case cech:         return calc_cech_();
-    default:           return false;
+        case alpha_shapes: return calc_alphashapes_();
+        case rips:         return calc_rips_();
+        //case cech:         return calc_cech_();
+        default:           return false;
     }
     done_ = true;
 }
@@ -294,8 +296,6 @@ bool Triangulation::calc_alphashapes_()
     //TODO: can we actually read these stars to track progress??
     p.pair_simplices();
 
-    triangles_.clear();
-
     Persistence::SimplexMap<AlphaFiltration> m = p.make_simplex_map(af);
     for(auto iter = p.begin(); iter != p.end(); iter++)
     {
@@ -326,7 +326,7 @@ bool Triangulation::calc_alphashapes_()
             const AlphaSimplex3D& b = m[cur];
 
             if (cur->unpaired()) {
-                //homology.append({b.dimension(), sqrt(b.data()[0]), std::numeric_limits<double>::max()});
+                homology.append({b.dimension(), sqrt(b.value()), std::numeric_limits<double>::max()});
                 continue;
             }
 
@@ -432,6 +432,7 @@ bool Triangulation::calc_rips_()
     }
 
     // calculate homology
+    homo_count_.clear();
     Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
 
     qDebug() << "Vietoris-Rips finished!";
