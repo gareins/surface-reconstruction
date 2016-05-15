@@ -121,6 +121,11 @@ int main(int argc, char **argv) {
     QPushButton *confirmButton = new QPushButton(widget);
     confirmButton->setText(QStringLiteral("Confirm"));
 
+    QGroupBox *homologyGroupBox = new QGroupBox(QStringLiteral("Homology"));
+    QLabel *h0label = new QLabel("H0: 0");
+    QLabel *h1label = new QLabel("H1: 0");
+    QLabel *h2label = new QLabel("H2: 0");
+
     vLayout->addWidget(filesGroupBox);
     vLayout->addWidget(filesList);
     vLayout->addWidget(methodGroupBox);
@@ -133,10 +138,11 @@ int main(int argc, char **argv) {
     //vLayout->addWidget(dimensionSlider);
     vLayout->addWidget(transparencyRBttn);
     vLayout->addWidget(confirmButton);
+    vLayout->addWidget(homologyGroupBox);
+    vLayout->addWidget(h0label);
+    vLayout->addWidget(h1label);
+    vLayout->addWidget(h2label);
 
-    // TODO: this should initiate a recalc in triangulation with parameters from above widgets
-    // and a reference to *plot instead of calling redraw. When the recalc is done,
-    // triangulation should call redraw with a TriangleList as param
     /*
     std::cout << filesList->currentText().toUtf8().constData() << std::endl;
     std::cout << methodList->currentIndex() << std::endl;
@@ -146,7 +152,12 @@ int main(int argc, char **argv) {
     */
 
     QObject::connect(confirmButton, &QPushButton::clicked,
-                     [&] { t.calculate(); qInfo("Found: %d", t.get_triangles().size()); plot->redraw(t.get_triangles()); });
+                     [&] {  t.calculate();
+                            qInfo("Found: %d", t.get_triangles().size());
+                            plot->redraw(t.get_triangles());
+                            h0label->setText("H0: "+QString::number(t.get_homology()[0]));
+                            h1label->setText("H0: "+QString::number(t.get_homology()[1]));
+                            h2label->setText("H0: "+QString::number(t.get_homology()[2]));});
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});

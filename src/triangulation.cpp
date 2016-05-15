@@ -85,6 +85,11 @@ typedef Filtration<AlphaSimplex3D>              AlphaFiltration;
 typedef StaticPersistence<>                     Persistence;
 typedef PersistenceDiagram<>                    PDgm;
 
+Triangulation::Triangulation(): done_(false), distance_(1), prob_(1), mode_(alpha_shapes), homo_count_(3, 0)
+{
+
+}
+
 bool Triangulation::set_in_file(QString infile)
 {
     QFile file(infile);
@@ -186,7 +191,7 @@ bool Triangulation::calc_cech_()
         points.push_back(p);
     }
 
-    int homology_dim = 2;
+    int homology_dim = skeleton-1;
     // Compute simplices with their Cech values
 //    int num_simplices = 0;
 //    for (int i = 0; i <= homology_dim + 1; ++i)
@@ -247,12 +252,10 @@ bool Triangulation::calc_cech_()
         }
     }
 
-    QVector<double> homo_count(homology_dim+1, 0);
-
     // calculate homology
-    Q_FOREACH (auto h, homology) homo_count[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
+    Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
 
-    qDebug() << "Cech homology:" << homo_count;
+    qDebug() << "Cech homology:" << homo_count_;
 
     return true;
 }
@@ -316,6 +319,34 @@ bool Triangulation::calc_alphashapes_()
             add_trig(this, (*vertices[1]).point(), (*vertices[2]).point(), (*vertices[3]).point());
         }
     }
+
+    // TODO FIXME
+    QVector<QVector3D> homology;
+    for (auto cur = p.begin(); cur != p.end(); ++cur) {
+        if (!cur->sign()) {
+
+            const AlphaSimplex3D& b = m[cur];
+
+            if (cur->unpaired()) {
+                //homology.append({b.dimension(), sqrt(b.data()[0]), std::numeric_limits<double>::max()});
+                continue;
+            }
+
+            const AlphaSimplex3D& d = m[cur->pair];
+            //homology.append({b.dimension(), sqrt(b.data()[0]), sqrt(d.data()[0]));
+        }
+    }
+
+    //persistence_timer.check("# Persistence timer");
+
+    // calculate homology
+    Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
+
+    //qDebug() << "Alpha homology:" << homo_count_;
+
+
+
+
     qDebug() << "Alpha shapes finished!";
     return true;
 }
@@ -333,10 +364,8 @@ typedef         PersistenceDiagram<>                                    PDgm;
 
 bool Triangulation::calc_rips_()
 {
-    Dimension               skeleton;
     DistanceType            max_distance;
     std::string             infilename, diagram_name;
-    QVector<QVector3D> homology;
 /*
     diagram_name = "vietoris_diagramus";
 
@@ -367,7 +396,6 @@ bool Triangulation::calc_rips_()
     Fltr                    f;
 
     //Dimension(&skeleton)->default_value(2);   //"Dimension of the Rips complex we want to compute")
-    skeleton = 3;
     //max_distance = Infinity;
     max_distance = distance_;
 
@@ -410,6 +438,7 @@ bool Triangulation::calc_rips_()
         }
     }
 
+    QVector<QVector3D> homology;
     for (DynamicPersistence::iterator cur = p.begin(); cur != p.end(); ++cur)
     {
         const DynamicPersistence::Cycle& cycle = cur->cycle;
@@ -454,12 +483,12 @@ bool Triangulation::calc_rips_()
 
     //persistence_timer.check("# Persistence timer");
 
-    QVector<double> homo_count(skeleton, 0);
+
 
     // calculate homology
-    Q_FOREACH (auto h, homology) homo_count[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
+    Q_FOREACH (auto h, homology) homo_count_[h[0]] += h[1] <= distance_ && distance_ <= h[2] ? 1 : 0;
 
-    qDebug() << "Rips homology:" << homo_count;
+    //qDebug() << "Rips homology:" << homo_count_;
     return true;
 }
 

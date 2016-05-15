@@ -8,7 +8,6 @@
 #include <topology/simplex.h>
 #include <topology/filtration.h>
 
-
 typedef std::array<double, 3> TPoint;
 typedef std::array<TPoint, 3> TTriangle;
 
@@ -21,7 +20,7 @@ class Triangulation
 {
 public:
     enum Mode { alpha_shapes, rips, cech };
-    Triangulation(): done_(false), distance_(1), prob_(1), mode_(alpha_shapes) {}
+    Triangulation();
 
     bool set_in_file(QString pts);
     void set_mode(Mode mode)                      { mode_ = mode; }
@@ -30,6 +29,7 @@ public:
 
     const TriangleList& get_triangles()           { return triangles_; }
     const PointList& get_chosen_pts()             { return pts_; }
+    const std::vector<double>& get_homology()             { return homo_count_; }
 
     bool calculate();
 
@@ -50,6 +50,8 @@ private:
     PointList orig_pts_;
     TriangleList triangles_;
     Mode mode_;
+    Dimension skeleton = 3;
+    std::vector<double> homo_count_;
 };
 
 #endif // TRIANGULATION_H
