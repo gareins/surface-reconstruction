@@ -27,6 +27,23 @@ Problem s "Cechovim kompleksom je, da je potrebno zelo pazljivo izbrati $\delta$
 
 \subsection{Homologija}
 
+Bistvo algebraične topologije so homološke grupe. Topologijo predstavimo z Bettijevimi števili, ki predstavljajo rang homoloških grup. Homologija stopnje 0 predstavlja povezanost podatkov (koliko posameznih povezanih komponent imamo), homologija stopnje 1 detektira luknje in tunele, homologija stopnje 2 votline, itd. V tej nalogi smo se omejili na te glavne tri grupe. 
+
+Povezanost diskretnih točk predstavimo s kompleksi. Povezanost je odvisna od določenih parametrov, npr. radij okoli točk, ki pove s katerimi drugimi točkami so le-te povezane. Ideja je podobna pri vseh treh obravnavanih kompleksih. Iz tega sledi, da je povezanost nekih diskretnih točk odvisna od izbranih parametrov in univerzalnega odgovora ni. 
+
+Ta problem rešujemo s \emph{persistenco}. Ideja persistence je, da se z večanjem radija okoli točk spreminjajo kompleksi in homološke grupe. To pa nam pove katera topologija skozi spremembe \emph{persistira}.
+
+Iz slike~\ref{homo} je razvidno, da z večanjem radija  postaja graf bolj povezan. Črte v prikazanem diagramu predstavljajo ``življensko dobo'' povezane komponente. Pri neki delti (epsilon) število presekanih črt predstavlja bettijevo število za določeno stopnjo.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{homo.png}
+    \caption{Persistenca in barkoda.}
+    \label{homo}
+\end{figure}
+
+Če pogledamo drugi primer je prečrtanih 6 povezanih komponent in 2 luknji. V seminarski nalogi smo prav tako za posamezen kompleks zgenerirali zgoraj opisano persistenčno tabelo, kjer se filtrira ven vse vnose (začetek/konec), ki vsebujejo delto (torej smo presekali črto).
+
 \subsection{Euler}
 
 \section{Pristop}
