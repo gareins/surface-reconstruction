@@ -16,14 +16,28 @@
 
 \section{Opis problema}
 
-\subsection{Alpha shapes}
-
-\subsection{Vietoris-Rips}
+Cilj projekta je bil rekonstruirati povr"sino iz oblaka to"ck s pomo"cjo topolo"skih konceptov kot so "Cechov in Vietoris-Rips kompleks ter alfa oblike. Potrebno je bilo vizualizirati rezultate in izra"cunati nekatere topolo"ske invariante kot so homologija in Eulerjeva karakteristika. V nadaljevanju tega poglavja na kratko opi"semo te topolo"ske koncepte.
 
 \subsection{"Cech kompleks}
-Izmed implementiranih metod je "Cechov kompleks najbolj osnoven. "Ce imamo oblak to"ck, si lahko predstavljamo, da ga naredimo tako, da okoli vsake to"cke o"crtamo kroglo s polmerom $\delta$. Na podlagi teh krogel to"cke pove"zemo v simplekse in sicer tako, da pove"zemo to"cke katerih krogle imajo neni"celni presek. Na primer "ce imamo dve krogli, ki se sekata, potem moramo njuni sredi"s"ci (njuni to"cki v oblaku to"ck) povezati v 1-simplex oz. rob. "Ce imamo tri krogle, ki se sekajo ena z drugo vendar ne vse hkrati, dobimo prazen trikotnik. "Ce je presek vseh treh krogel neni"celen dobimo polni trikotnik itd. 
+Izmed implementiranih metod je "Cechov kompleks najbolj osnoven. "Ce imamo oblak to"ck, si lahko predstavljamo, da ga naredimo tako, da okoli vsake to"cke o"crtamo navidezno kroglo s polmerom $\delta$. Na podlagi teh krogel to"cke pove"zemo v simplekse in sicer tako, da pove"zemo to"cke katerih krogle imajo neni"celni presek. Na primer "ce imamo dve krogli, ki se sekata, potem moramo njuni sredi"s"ci (njuni to"cki v oblaku to"ck) povezati v 1-simplex oz. rob. "Ce imamo tri krogle, ki se sekajo ena z drugo vendar ne vse hkrati, dobimo prazen trikotnik. "Ce je presek vseh treh krogel neni"celen dobimo polni trikotnik itd. 
 
 Problem s "Cechovim kompleksom je, da je potrebno zelo pazljivo izbrati $\delta$ parameter, saj lahko zelo hitro dobimo visoko dimenzijske simplekse, kar ni vedno za"zeljeno. Do istega problema pride, "ce oblak to"ck ni homogeno porazdeljen, ampak so to"cke ponekod bolj gosto posejane. V takih delih oblaka tudi zelo hitro dobimo visoko dimenzijske simplekse.
+
+\subsection{Vietoris-Rips}
+Vietoris-Rips kompleks je v osnovi zelo podoben "Cechovemu kompleksu, vendar tu ne operiramo ve"c z navideznimi kroglami ampak z radaljami med pari to"ck. Za Vietoris-Ripsa velja, da je nek simpleks del kompleksa, "ce je premer simpleksa manjsi ali enak $2\delta$. Razliko s "Cechom se najla"zje vidi, "ce vzamemo za oblak to"ck ogli"s"ca enakostrani"cnega trikotnika in za $\delta$ parameter pribli"zno polovico dol"zine stranice, kot je prikazano na Sliki~\ref{fig:vrdiag}. S "Cechovim kompleksom dobimo samo prazni trkotnik, medtem ko z Vietoris-Ripsom dobimo poln 2-simpleks.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.4\textwidth]{vrdiag.png}
+    \caption{Z Vietoris-Ripsom dobimo polni trikotnik, za razliko od "Cechovega kompleksa, kjer dobimo praznega}
+    \label{fig:vrdiag}
+\end{figure}
+
+Izka"ze se, da si lai"cno lahko Vietoris-Ripsa razlagamo kot "Cechov kompleks, pri katerem so dodani simpleksi, ki imajo vsa svoja lica vklju"cena v "Cechovem kompleksu. Iz tega sledi, da je "Cechov kompleks podmno"zica Vietoris-Ripsovega kompleksa. Seveda naj opomnimo, da morata pri tem imeti Vietoris-Rips in "Cechov kompleks enak parameter $\delta$. 
+
+Prav tako kot "Cechov kompleks ima tudi Vietoris-Rips probleme z visoko dimenzijskimi simpleksi.
+
+\subsection{Alpha shapes}
 
 \subsection{Homologija}
 
