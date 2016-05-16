@@ -1,0 +1,107 @@
+%\documentclass[a4paper,11pt]{article}
+\documentclass[a4paper]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[slovene,english]{babel}
+
+\usepackage[pdftex]{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath} 
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{a4wide}
+\usepackage{setspace}
+
+\usepackage{float}
+\usepackage[toc,page]{appendix}
+\usepackage{url}
+\usepackage{lipsum}
+
+% \usepackage{fancyhdr}
+
+% \pagestyle{fancy}
+% \fancyhf{}
+% \lhead{Home Exam - D7032E - 2015}
+% \rhead{Jurij Slabanja, Group Purple Penguins}
+% \cfoot{\thepage}
+
+
+\newcommand{\comment}[1]{}
+
+\makeatletter
+\newcommand*{\centerfloat}{
+  \parindent \z@
+  \leftskip \z@ \@plus 1fil \@minus \textwidth
+  \rightskip\leftskip
+  \parfillskip \z@skip}
+\makeatother
+
+\title{TITLE}
+\author{AUTHOR}
+\date{\today}
+
+\singlespacing
+%\onehalfspacing
+%\doublespacing
+\selectlanguage{english}
+\begin{document}
+
+	\maketitle
+
+	\section{Problem description}
+
+	\lipsum[1]
+
+	\section{Solution}
+
+	\lipsum[1]
+
+	\section{Results}
+
+	\lipsum[1]
+	
+	\bibliographystyle{plain}
+	\bibliography{report-bib}
+
+
+\comment{
+	
+	\begin{equation}
+	Lorem ipsum
+	\label{equ:LABEL}
+	\end{equation}
+
+
+	\begin{figure}[H]
+		\centerfloat
+		\includegraphics[scale=0.3]{DUMMY.png}
+		\caption{CAPTION}
+		\label{fig:LABEL}
+	\end{figure}
+
+	\begin{table}[H]
+		\centerfloat
+		\begin{tabular}{lrp{4cm}}
+			\hline
+			TABLE 	&	TABLE 	&	TABLE 	\\
+			\hline
+			ITEM 	& 	ITEM & 	ITEM 	\\
+			ITEM 	& 	ITEM & 	ITEM 	\\
+			\hline
+		\end{tabular}
+		\caption{CAPTION}
+		\label{tab:LABEL}
+	\end{table}
+
+
+	\bibliographystyle{plain}
+	\bibliography{template}%.bib}
+
+
+	\appendix
+	\appendixpage
+	\section{\label{app:LABEL}SECTION}
+}
+
+\end{document}
