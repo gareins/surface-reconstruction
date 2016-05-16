@@ -1,4 +1,4 @@
-#include "Dionysus/examples/alphashapes/alphashapes3d.h"
+#include "examples/alphashapes3d.h"
 
 #include "triangulation.h"
 #include <topology/simplex.h>
@@ -79,6 +79,9 @@ void add_trig(Triangulation* t, CGAL::Point_3<CGAL::Epeck> pt1, CGAL::Point_3<CG
     t->add_triangle(to_add);
 }
 
+#define homology_append(frst, scnd, thrd) homology.append({static_cast<float>(frst), static_cast<float>(scnd), static_cast<float>(thrd)});
+
+
 // ---------------------------------------------------
 
 typedef Filtration<AlphaSimplex3D>              AlphaFiltration;
@@ -91,6 +94,7 @@ Triangulation::Triangulation(): done_(false), distance_(1), prob_(1), mode_(alph
 
 bool Triangulation::set_in_file(QString infile)
 {
+    orig_pts_.clear();
     QFile file(infile);
 
     if(!file.open(QIODevice::ReadOnly))
@@ -99,6 +103,7 @@ bool Triangulation::set_in_file(QString infile)
         return false;
     }
 
+    double x_s=0, y_s=0, z_s=0;
     QTextStream in(&file);
     while(!in.atEnd())
     {
@@ -106,13 +111,27 @@ bool Triangulation::set_in_file(QString infile)
         if(!(line[0] == 'v' && line[1] == ' '))
             continue;
 
-        QStringList  fields = line.right(line.length() - 2).split(QString(", "));
+        QStringList  fields = line.right(line.length() - 2).split(QString(" "));
+
         double x = fields[0].toDouble();
         double y = fields[1].toDouble();
         double z = fields[2].toDouble();
 
+        x_s += x; y_s += y; z_s += z;
+
         TPoint pt = {x, y, z};
         orig_pts_.push_back(pt);
+    }
+
+    x_s /= orig_pts_.size();
+    y_s /= orig_pts_.size();
+    z_s /= orig_pts_.size();
+
+    for(uint i = 0; i < orig_pts_.size(); i++)
+    {
+        orig_pts_[i][0] -= x_s;
+        orig_pts_[i][1] -= y_s;
+        orig_pts_[i][2] -= z_s;
     }
 
     qDebug("Good file :)");
@@ -263,12 +282,12 @@ bool Triangulation::calc_cech_()
 
     return true;
 }
-/**/
+*/
 
 int Triangulation::calc_euler()
 {
     int euler = 0;
-    for (int i = 0; i < homo_count_.size(); i++) {
+    for (uint i = 0; i < homo_count_.size(); i++) {
         euler += (pow(-1,i)*homo_count_[i]);
     }
     return euler;
@@ -350,7 +369,7 @@ bool Triangulation::calc_alphashapes_()
         for (auto iter = dgms[i].begin(); iter != dgms[i].end(); iter++) {
             std::cout << (*iter).x() << " " << (*iter).y() << std::endl;
 
-            homology.append({i, (*iter).x(), (*iter).y()});
+            homology_append(i, (*iter).x(), (*iter).y());
         }
     }
 
@@ -455,13 +474,13 @@ bool Triangulation::calc_rips_()
             const Smplx& d = m[cur];
 
             if (b.dimension() >= skeleton) continue;
-            homology.append({b.dimension(), size(b), size(d)});
+            homology_append(b.dimension(), size(b), size(d));
         }
         else if (cur->unpaired())    // positive could be unpaired
         {
             const Smplx& b = m[cur];
             if (b.dimension() >= skeleton) continue;
-            homology.append({b.dimension(), size(b), std::numeric_limits<double>::max()});
+            homology_append(b.dimension(), size(b), std::numeric_limits<float>::max());
         }
     }
 
