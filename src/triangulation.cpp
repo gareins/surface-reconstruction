@@ -111,7 +111,7 @@ bool Triangulation::set_in_file(QString infile)
         if(!(line[0] == 'v' && line[1] == ' '))
             continue;
 
-        QStringList  fields = line.right(line.length() - 2).split(QString(", "));
+        QStringList  fields = line.right(line.length() - 2).split(QRegExp(",? "));
 
         double x = fields[0].toDouble();
         double y = fields[1].toDouble();
