@@ -111,7 +111,7 @@ bool Triangulation::set_in_file(QString infile)
         if(!(line[0] == 'v' && line[1] == ' '))
             continue;
 
-        QStringList  fields = line.right(line.length() - 2).split(QString(" "));
+        QStringList  fields = line.right(line.length() - 2).split(QString(", "));
 
         double x = fields[0].toDouble();
         double y = fields[1].toDouble();
@@ -367,13 +367,13 @@ bool Triangulation::calc_alphashapes_()
     for (int i = 0; i < skeleton; ++i) {
         //std::cout << i << std::endl;
         for (auto iter = dgms[i].begin(); iter != dgms[i].end(); iter++) {
-            std::cout << (*iter).x() << " " << (*iter).y() << std::endl;
+            //std::cout << (*iter).x() << " " << (*iter).y() << std::endl;
 
             homology_append(i, (*iter).x(), (*iter).y());
         }
     }
 
-    std::cout << distance_ <<std::endl;
+    //std::cout << distance_ <<std::endl;
 
     // calculate homology
     // why is dist/4 "approximately" the correct value?
