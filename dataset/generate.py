@@ -13,4 +13,4 @@ for npoints in N:
 
     with open("sphere_" + str(npoints) + ".obj", "w") as fp:
         for pt in vec.T:
-            fp.write("v " + ", ".join([str(p) for p in pt]) + "\n")
+            fp.write("v " + " ".join([str(p) for p in pt]) + "\n")

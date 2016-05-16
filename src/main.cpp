@@ -83,6 +83,7 @@ int main(int argc, char **argv) {
     // TODO: tweak values
     QDoubleSpinBox *deltaSpinner = new QDoubleSpinBox(widget);
     deltaSpinner->setMinimum(0.0);
+    deltaSpinner->setDecimals(4);
     //deltaSpinner->setMaximum(5.0);
     deltaSpinner->setSingleStep(0.05);
     deltaSpinner->setValue(1.0);
@@ -160,7 +161,7 @@ int main(int argc, char **argv) {
 
     QObject::connect(confirmButton, &QPushButton::clicked,
                      [&] {  t.calculate();
-                            qInfo("Found: %d", t.get_triangles().size());
+                            qInfo("Found: %d", int(t.get_triangles().size()));
                             plot->redraw(t.get_triangles(), t.get_lines(), t.get_points());
                             h0label->setText("H0: "+QString::number(t.get_homology()[0]));
                             h1label->setText("H1: "+QString::number(t.get_homology()[1]));

@@ -18,7 +18,6 @@ typedef std::vector<TTriangle> TriangleList;
 typedef std::vector<TPoint> Simplex0List;
 typedef std::vector<TPoint> Simplex1List;
 
-
 // Wrapper...
 class Triangulation
 {
