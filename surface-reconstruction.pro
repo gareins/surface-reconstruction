@@ -18,13 +18,13 @@ SOURCES += src/main.cpp \
     src/surfacegraph.cpp
 
 HEADERS += \
+    src/main.h \
     src/geometryengine.h \
     src/surfacegraph.h \
     src/triangulation.h \
     src/Miniball_dynamic_d.h \
     examples/alphashapes3d.h \
-    examples/alphashapes3d.hpp
-    examples/
+    examples/alphashapes3d.hpp \
 
 OTHER_FILES += doc/src/* \
                doc/images/* \
@@ -33,4 +33,4 @@ OTHER_FILES += doc/src/* \
 # Default rules for deployment.
 include(deployment.pri)
 
-QMAKE_CXXFLAGS += -Wno-unused -O0 -frounding-math
+QMAKE_CXXFLAGS += -Wno-unused -frounding-math

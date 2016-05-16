@@ -105,6 +105,7 @@ void SurfaceGraph::initializeGL()
 
     glClearColor(0, 0, 0, 1);
 
+
     initShaders();
     initTextures();
 
@@ -113,6 +114,20 @@ void SurfaceGraph::initializeGL()
 
     // Enable back face culling
     glEnable(GL_CULL_FACE);
+
+    // Change znear - zfar
+    double fovy = 45.0f;
+    double aspect = 1.333f;
+    double zNear = 0.1f;
+    double zFar = 100.0f;
+
+    GLdouble xmin, xmax, ymin, ymax;
+    ymax = zNear * tan( fovy * M_PI / 360.0 );
+    ymin = -ymax;
+    xmin = ymin * aspect;
+    xmax = ymax * aspect;
+
+    glFrustum( xmin, xmax, ymin, ymax, zNear, zFar );
 
     geometries = new GeometryEngine;
 

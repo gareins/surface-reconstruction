@@ -1,49 +1,47 @@
-#include <QApplication>
-#include <QLabel>
-#include <QSurfaceFormat>
+#include "main.h"
 
-#ifndef QT_NO_OPENGL
-#include "surfacegraph.h"
-#endif
+void Compute::run()
+{
+    QLabel* h0label = labels[0];
+    QLabel* h1label = labels[1];
+    QLabel* h2label = labels[2];
+    QLabel* eulerLabel = labels[3];
+    QLabel* statusLabel = labels[4];
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QDoubleSpinBox>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QSlider>
-#include <QtWidgets/QGroupBox>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QMessageBox>
-#include <QtGui/QScreen>
-#include <QDirIterator>
-#include <QRadioButton>
-#include <iostream>
+    statusLabel->setText("Calculating...");
+    confirmButton->setEnabled(false);
+    t->calculate();
 
-#include "triangulation.h"
+    statusLabel->setText("Drawing...");
+    h0label->setText("H0: "+QString::number(t->get_homology()[0]));
+    h1label->setText("H1: "+QString::number(t->get_homology()[1]));
+    h2label->setText("H2: "+QString::number(t->get_homology()[2]));
+    eulerLabel->setText("Euler: "+QString::number(t->calc_euler()));
 
-int main(int argc, char **argv) {
+    qInfo("Found: %d", int(t->get_triangles().size()));
+    confirmButton->setEnabled(true);
 
-    Triangulation t;
-    QApplication app(argc, argv);
+    Q_EMIT drawTriangulation();
+}
 
-    QSurfaceFormat format;
+Main::Main(int argc, char **argv) : QApplication(argc, argv)
+{
+    setApplicationName("Surface Reconstruction");
+
     format.setDepthBufferSize(24);
     QSurfaceFormat::setDefaultFormat(format);
-
-    app.setApplicationName("Surface Reconstruction");
 #ifndef QT_NO_OPENGL
 
-    QWidget *graph = new QWidget;
-    SurfaceGraph *plot = new SurfaceGraph(graph);
+    graph = new QWidget;
+    plot = new SurfaceGraph(graph);
+    plot->makeCurrent();
+
     graph->setMinimumSize(700,500);
     plot->setMinimumSize(700,500);
 
-    QWidget *widget = new QWidget;
-    QHBoxLayout *hLayout = new QHBoxLayout(widget);
-    QVBoxLayout *vLayout = new QVBoxLayout();
+    widget = new QWidget;
+    hLayout = new QHBoxLayout(widget);
+    vLayout = new QVBoxLayout();
 
     hLayout->addWidget(graph, 1);
     hLayout->addLayout(vLayout);
@@ -51,24 +49,24 @@ int main(int argc, char **argv) {
 
     widget->setWindowTitle(QStringLiteral("Surface Reconstruction"));
 
-    QGroupBox *filesGroupBox = new QGroupBox(QStringLiteral("Dataset"));
+    filesGroupBox = new QGroupBox(QStringLiteral("Dataset"));
 
-    QComboBox *filesList = new QComboBox(widget);
+    filesList = new QComboBox(widget);
     QObject::connect(filesList, &QComboBox::currentTextChanged,
                      [&] (const QString& choice) { t.set_in_file(("dataset/" + choice).toUtf8().constData()); });
 
-    QDirIterator iter("dataset/", QStringList() << "*.obj", QDir::Files, QDirIterator::Subdirectories);
-    while (iter.hasNext()) {
-        QString file = iter.next();
-        filesList->addItem(file.remove(0,8));
+
+    iter = new QDirIterator("dataset/", QStringList() << "*.obj", QDir::Files, QDirIterator::Subdirectories);
+    while (iter->hasNext()) {
+        filesList->addItem(iter->next().remove(0,8));
     }
 
-    QGroupBox *methodGroupBox = new QGroupBox(QStringLiteral("Method"));
+    methodGroupBox = new QGroupBox(QStringLiteral("Method"));
 
-    QComboBox *methodList = new QComboBox(widget);
-    QString methodViet = "Vietoris-Rips"; methodList->addItem(methodViet);
-    //QString methodCech = "Čech complex";  methodList->addItem(methodCech);
-    QString methodAlph = "α-shapes";      methodList->addItem(methodAlph);
+    methodList = new QComboBox(widget);
+    methodViet = "Vietoris-Rips"; methodList->addItem(methodViet);
+    //methodCech = "Čech complex";  methodList->addItem(methodCech);
+    methodAlph = "α-shapes";      methodList->addItem(methodAlph);
 
     QObject::connect(methodList, &QComboBox::currentTextChanged,
         [&] (const QString& choice) {
@@ -78,22 +76,20 @@ int main(int argc, char **argv) {
     });
     t.set_mode(Triangulation::rips);
 
-    QGroupBox *selectionGroupBox = new QGroupBox(QStringLiteral("Delta parameter"));
+    selectionGroupBox = new QGroupBox(QStringLiteral("Delta parameter"));
 
-    // TODO: tweak values
-    QDoubleSpinBox *deltaSpinner = new QDoubleSpinBox(widget);
+    deltaSpinner = new QDoubleSpinBox(widget);
     deltaSpinner->setMinimum(0.0);
     deltaSpinner->setDecimals(4);
-    //deltaSpinner->setMaximum(5.0);
     deltaSpinner->setSingleStep(0.05);
     deltaSpinner->setValue(1.0);
 
     QObject::connect(deltaSpinner, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
                      [&] (double val) { t.set_distance(val); });
 
-    QGroupBox *samplePercentGroupBox = new QGroupBox(QStringLiteral("Sample percent"));
+    samplePercentGroupBox = new QGroupBox(QStringLiteral("Sample percent"));
 
-    QSlider *samplePercentSlider = new QSlider(Qt::Horizontal, widget);
+    samplePercentSlider = new QSlider(Qt::Horizontal, widget);
     samplePercentSlider->setMinimum(0);
     samplePercentSlider->setMaximum(100);
     samplePercentSlider->setTickInterval(1);
@@ -103,34 +99,23 @@ int main(int argc, char **argv) {
     QObject::connect(samplePercentSlider, &QSlider::sliderMoved,
                      [&] (int val) { t.set_point_filtration((float)val / 100); });
 
-    /*
-    QGroupBox *dimensionGroupBox = new QGroupBox(QStringLiteral("Dimensions"));
-
-    QSlider *dimensionSlider = new QSlider(Qt::Horizontal, widget);
-    dimensionSlider->setMinimum(0);
-    dimensionSlider->setMaximum(2);
-    dimensionSlider->setTickPosition(QSlider::TicksBelow);
-    dimensionSlider->setTickInterval(1);
-    dimensionSlider->setEnabled(true);
-    dimensionSlider->setSliderPosition(2);
-    */
-
-    QPushButton *transparencyRBttn = new QPushButton(widget);
+    transparencyRBttn = new QPushButton(widget);
     transparencyRBttn->setText(QStringLiteral("Transparent"));
     transparencyRBttn->setCheckable(true);
 
-    QPushButton *linesBttn = new QPushButton(widget);
+    linesBttn = new QPushButton(widget);
     linesBttn->setText(QStringLiteral("Show Lines"));
     linesBttn->setCheckable(true);
 
-    QPushButton *confirmButton = new QPushButton(widget);
+    confirmButton = new QPushButton(widget);
     confirmButton->setText(QStringLiteral("Confirm"));
 
-    QGroupBox *homologyGroupBox = new QGroupBox(QStringLiteral("Homology"));
-    QLabel *h0label = new QLabel("H0: 0");
-    QLabel *h1label = new QLabel("H1: 0");
-    QLabel *h2label = new QLabel("H2: 0");
-    QLabel *eulerLabel = new QLabel("Euler: 0");
+    homologyGroupBox = new QGroupBox(QStringLiteral("Homology"));
+    h0label = new QLabel("H0: 0");
+    h1label = new QLabel("H1: 0");
+    h2label = new QLabel("H2: 0");
+    eulerLabel = new QLabel("Euler: 0");
+    statusLabel = new QLabel("Idle");
 
     vLayout->addWidget(filesGroupBox);
     vLayout->addWidget(filesList);
@@ -140,8 +125,6 @@ int main(int argc, char **argv) {
     vLayout->addWidget(deltaSpinner);
     vLayout->addWidget(samplePercentGroupBox);
     vLayout->addWidget(samplePercentSlider);
-    //vLayout->addWidget(dimensionGroupBox);
-    //vLayout->addWidget(dimensionSlider);
     vLayout->addWidget(transparencyRBttn);
     vLayout->addWidget(linesBttn);
     vLayout->addWidget(confirmButton);
@@ -150,25 +133,16 @@ int main(int argc, char **argv) {
     vLayout->addWidget(h1label);
     vLayout->addWidget(h2label);
     vLayout->addWidget(eulerLabel);
+    vLayout->addWidget(statusLabel);
 
-    /*
-    std::cout << filesList->currentText().toUtf8().constData() << std::endl;
-    std::cout << methodList->currentIndex() << std::endl;
-    std::cout << deltaSpinner->value() << std::endl;
-    std::cout << samplePercentSlider->value() << std::endl;
-    std::cout << dimensionSlider->value() << std::endl;
-    */
+    QObject::connect(confirmButton, &QPushButton::clicked, [&] {
+        std::vector<QLabel*> labels = { h0label, h1label, h2label, eulerLabel, statusLabel };
+        Compute* thr = new Compute(&t, labels, confirmButton);
 
-    QObject::connect(confirmButton, &QPushButton::clicked,
-                     [&] {  t.calculate();
-                            qInfo("Found: %d", int(t.get_triangles().size()));
-                            plot->redraw(t.get_triangles(), t.get_lines(), t.get_points());
-                            h0label->setText("H0: "+QString::number(t.get_homology()[0]));
-                            h1label->setText("H1: "+QString::number(t.get_homology()[1]));
-                            h2label->setText("H2: "+QString::number(t.get_homology()[2]));
-                            eulerLabel->setText("Euler: "+QString::number(t.calc_euler()));
-                            plot->toggleLines(linesBttn->isChecked());
-                            plot->toggleTransparency(transparencyRBttn->isChecked());});
+        QObject::connect(thr, &Compute::drawTriangulation, this, &Main::drawTriangulation);
+        QObject::connect(thr, SIGNAL(finished()), thr, SLOT(deleteLater()));
+        thr->start();
+    });
 
     QObject::connect(transparencyRBttn, &QRadioButton::toggled,
                      [=]{plot->toggleTransparency(transparencyRBttn->isChecked());});
@@ -181,5 +155,21 @@ int main(int argc, char **argv) {
     QLabel note("OpenGL Support required");
     note.show();
 #endif
-    return app.exec();
 }
+
+void Main::drawTriangulation()
+{
+    plot->redraw(t.get_triangles(), t.get_lines(), t.get_points());
+    plot->toggleLines(linesBttn->isChecked());
+    plot->toggleTransparency(transparencyRBttn->isChecked());
+
+    statusLabel->setText("Idle");
+    confirmButton->setEnabled(true);
+}
+
+int main(int argc, char **argv)
+{
+    Main main(argc, argv);
+    return main.exec();
+}
+
