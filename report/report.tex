@@ -62,7 +62,7 @@ Iz slike~\ref{homo} je razvidno, da z večanjem radija  postaja graf bolj poveza
 
 \section{Pristop}
 
-Uporabili smo knji"zico Dyonisus za izra"cun topologij in knji"zico QT za izris in nadzor aplikacije. Implementirali smo ve"c pristopov, Vietoris-Rips kompleks, Alfa oblike ter "Cechov kompleks. Izkazalo se je, da je "Cech izjemno po"casen, tako da je bil kanseje odstranjen, "se vedno pa ga lahko najdete v zakomentiranem delu kode.
+Uporabili smo knji"zico Dyonisus za izra"cun topologij in knji"zico QT za izris in nadzor aplikacije. Implementirali smo ve"c pristopov, Vietoris-Rips kompleks, Alfa oblike ter "Cechov kompleks. Izkazalo se je, da je "Cech izjemno po"casen, tako da je bil kasneje odstranjen, "se vedno pa ga lahko najdete v zakomentiranem delu kode.
 
 Za prikaz imamo ve"c opcij, prosojnost pogleda, izris povezav in izbor oblaka to"ck. Za potrebe naloge smo implementirali tudi mo"znost izbire parametra $\delta$ ter procenta izbranih to"ck na kompleksu.
 
@@ -77,11 +77,20 @@ Te"zave smo imeli z ve"c detajli, a izpostavimo dva:
 
 \section{Rezultati}
 
-Iz slik v nadaljevanju si lahko pogledate delovanje programa. Program je prilo"zen v zip datoteki.
+Z večanjem $\delta$ seveda narašča čas računanja. Alpha oblike delujejo hitreje kot vietoris-rips. Zelo zanimivo (in pravilno) je delovanje izračuna homologije, saj npr. pri krogli, v primeru, da ima ta 3 luknje, izračuna homologijo kot (1,2,0), torej 1 povezana komponenta in 2 tunela. V primeru, da imamo 4 luknje dobimo homologijo (1,3,0), torej 3 tuneli oz. če sploščimo dobljeno formacijo okol ene od lukenj dobimo 3 luknje (glej Sliko~\ref{lukne}).
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{vr_long.png}
+    \includegraphics[width=1\textwidth]{lukne_primer.png}
+    \caption{Primer homologije pri krogli s 4 luknjami.}
+    \label{lukne}
+\end{figure}
+
+$\delta$ parameter je tesno povezan s tipom podatkov. Pri gostejših oblakih bo zadostila manjša $\delta$. Podobno so lahko razdalje v setu točk zelo velike (čeprav je oblak zelo velik oz. gost), zato bo potrebna večja $\delta$. Iz slik v nadaljevanju je vidno delovanje programa. Program je prilo"zen v zip datoteki.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=1\textwidth]{vr_long.png}
     \caption{Izra"cun Vietoris-Ripsa s premajhnim delta}
     \label{fig:vr1}
 \end{figure}
@@ -89,35 +98,35 @@ Iz slik v nadaljevanju si lahko pogledate delovanje programa. Program je prilo"z
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{vr_full_9639823.png}
+    \includegraphics[width=1\textwidth]{vr_full_9639823.png}
     \caption{Izra"cun Vietoris-Ripsa z zadostnim delta, vendar malo to"ckami. "St. to"ck: 9639823}
     \label{fig:vr2}
 \end{figure}
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{vr_1hole.png}
+    \includegraphics[width=1\textwidth]{vr_1hole.png}
     \caption{Izra"cun Vietoris-Ripsa n krogli: ena luknja}
     \label{fig:vr3}
 \end{figure}
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{vr_2hole.png}
+    \includegraphics[width=1\textwidth]{vr_2hole.png}
     \caption{Izra"cun Vietoris-Ripsa n krogli: dve lunkji}
     \label{fig:vr4}
 \end{figure}
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{alpha_full.png}
+    \includegraphics[width=1\textwidth]{alpha_full.png}
     \caption{Izra"cun $\alpha$-oblik: polno, ena lunkja na dnu zajca}
     \label{fig:a1}
 \end{figure}
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\textwidth]{alpha_lowdelta.png}
+    \includegraphics[width=1\textwidth]{alpha_lowdelta.png}
     \caption{Izra"cun $\alpha$-oblik: polno, Izra"cun na vseh to"ckah, a s premajhnim $\delta$}
     \label{fig:a1}
 \end{figure}
@@ -129,6 +138,17 @@ Iz slik v nadaljevanju si lahko pogledate delovanje programa. Program je prilo"z
     \label{fig:edges}
 \end{figure}
 
+\newpage % mogoce nav treba
+
 \section{Delitev dela}
+
+\subsection{Ožbolt}
+Alpha shapes, branje in formatiranje podatkov, testiranje. 
+
+\subsection{Anej}
+Vietoris-Rips, homologija, izris crt, shaderji.
+
+\subsection{Jurij}
+Cech, euler, večina grafičnega vmesnika, osnoven izris.
 
 \end{document}
