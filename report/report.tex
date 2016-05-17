@@ -19,7 +19,7 @@
 Cilj projekta je bil rekonstruirati povr"sino iz oblaka to"ck s pomo"cjo topolo"skih konceptov kot so "Cechov in Vietoris-Rips kompleks ter alfa oblike. Potrebno je bilo vizualizirati rezultate in izra"cunati nekatere topolo"ske invariante kot so homologija in Eulerjeva karakteristika. V nadaljevanju tega poglavja na kratko opi"semo te topolo"ske koncepte.
 
 \subsection{"Cech kompleks}
-Izmed implementiranih metod je "Cechov kompleks najbolj osnoven. "Ce imamo oblak to"ck, si lahko predstavljamo, da ga naredimo tako, da okoli vsake to"cke o"crtamo navidezno kroglo s polmerom $\delta$. Na podlagi teh krogel to"cke pove"zemo v simplekse in sicer tako, da pove"zemo to"cke katerih krogle imajo neni"celni presek. Na primer "ce imamo dve krogli, ki se sekata, potem moramo njuni sredi"s"ci (njuni to"cki v oblaku to"ck) povezati v 1-simplex oz. rob. "Ce imamo tri krogle, ki se sekajo ena z drugo vendar ne vse hkrati, dobimo prazen trikotnik. "Ce je presek vseh treh krogel neni"celen dobimo polni trikotnik itd. 
+Izmed implementiranih metod je "Cechov kompleks eden najbolj osnovnih. "Ce imamo oblak to"ck, si lahko predstavljamo, da ga naredimo tako, da okoli vsake to"cke o"crtamo navidezno kroglo s polmerom $\delta$. Na podlagi teh krogel to"cke pove"zemo v simplekse in sicer tako, da pove"zemo to"cke katerih krogle imajo neni"celni presek. Na primer "ce imamo dve krogli, ki se sekata, potem moramo njuni sredi"s"ci (njuni to"cki v oblaku to"ck) povezati v 1-simpleks oz. rob. "Ce imamo tri krogle, ki se sekajo ena z drugo vendar ne vse hkrati, dobimo prazen trikotnik. "Ce je presek vseh treh krogel neni"celen dobimo polni trikotnik itd. 
 
 Problem s "Cechovim kompleksom je, da je potrebno zelo pazljivo izbrati $\delta$ parameter, saj lahko zelo hitro dobimo visoko dimenzijske simplekse, kar ni vedno za"zeljeno. Do istega problema pride, "ce oblak to"ck ni homogeno porazdeljen, ampak so to"cke ponekod bolj gosto posejane. V takih delih oblaka tudi zelo hitro dobimo visoko dimenzijske simplekse.
 
@@ -37,7 +37,9 @@ Izka"ze se, da si lai"cno lahko Vietoris-Ripsa razlagamo kot "Cechov kompleks, p
 
 Prav tako kot "Cechov kompleks ima tudi Vietoris-Rips probleme z visoko dimenzijskimi simpleksi.
 
-\subsection{Alpha shapes}
+\subsection{Alpha oblike}
+
+Alfa oblike izbolj"sajo "ze omenjena kompleksa v oziru dimenzionalnosti generiranih simpleksov. V osnovi se gre za to, da "cez oblak to"ck nari"semo Voronojev diagram nato pa pove"zemo samo to"cke, ki so so Voronojevske sosede in so med sabo oddaljene za manj kot $\delta$ (podobno kot pri prej"snjih dveh kompleksih). Dve tocki sta Voronojevski sosedi, "ce si Voronojevski celici, katerima to"cki pripadata, delita vsaj eno to"cko t.j. celici se dotikata. Ker povezujemo samo Voronojevske sosede, so alfa oblike podmno"zica Delaunayjeve triangulacije, kar pomeni da bojo imele geometrijsko realizacijo v neki $\mathbb{R}^{d}$ in bo dimenzionalnost simpleksov nizka. 
 
 \subsection{Homologija}
 
